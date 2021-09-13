@@ -1,0 +1,113 @@
+[
+    {
+        "name": "Apptitude",
+        "code": "APPT",
+        "slots": 3,
+        "coverage": [
+            "SM",
+            "PB",
+            "SA",
+            "SR",
+            "KM",
+            "AA",
+            "OM",
+            "SS",
+            "MP"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Data Structure and Algorithms",
+        "code": "DSA",
+        "slots": 5,
+        "coverage": [
+            "SM",
+            "PB",
+            "SA",
+            "OM",
+            "SS"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Data Science",
+        "code": "DS",
+        "slots": 2,
+        "coverage": [
+            "SA",
+            "OM",
+            "SS",
+            "SR",
+            "SM",
+            "PB"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Psudo Code",
+        "code": "PC",
+        "slots": 2,
+        "coverage": [
+            "SM",
+            "PB",
+            "SA",
+            "OM",
+            "SS",
+            "SR"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Coding Questions",
+        "code": "CQ",
+        "slots": 6,
+        "coverage": [
+            "SR",
+            "KM",
+            "AA",
+            "MP",
+            "SM",
+            "PB"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Software Development",
+        "code": "SD",
+        "slots": 4,
+        "ignore": [
+            "OM"
+        ],
+        "coverage": [
+            "SA",
+            "SR",
+            "KM",
+            "AA"
+        ]
+    },
+    {
+        "name": "Computer Networking & Security",
+        "code": "CNS",
+        "slots": 3,
+        "coverage": [
+            "MP",
+            "AR",
+            "SA"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Database Management System",
+        "code": "DBMS",
+        "slots": 2,
+        "coverage": [
+            "SM",
+            "PB",
+            "KM",
+            "AA",
+            "OM",
+            "AR"
+        ],
+        "ignore": []
+    }
+]

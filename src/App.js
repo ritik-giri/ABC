@@ -1,166 +1,49 @@
-import "./App.css";
-import contributors from "./data/contributors.json";
-import timetable from "./data/timetable.json";
-import topics from "./data/topics.json";
-
-function getTopicName(codeName) {
-  return topics.find((topic) => topic.code === codeName).name;
-}
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
+import Home from "./pages/home-page/Home";
+import Post from "./pages/post-page/Post";
+import Question from "./pages/question-page/Question";
+import Questions from "./pages/questions-page/Questions";
+import {
+    setContributors,
+    setTimetable,
+    setConfigs,
+    setTopics,
+} from "./redux/actions/actions";
 
 function App() {
-  return (
-    <div>
-      <h1>MCQ Schedule for AUG 30 2021 to SEPT 12 2021</h1>
-      <hr />
-      <h3 id="moderator">Moderator of the week: Suman More (SM)</h3>
-      <div id="timetable">
-        <h1>Schedule</h1>
-        <table>
-          <thead>
-            <tr>
-              <th>DAY</th>
-              <th>SLOT 1</th>
-              <th>SLOT 2</th>
-              <th>SLOT 3</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Monday</td>
-              <td>
-                {getTopicName(timetable.MON.S1.topic)} (
-                {timetable.MON.S1.assignee})
-              </td>
-              <td>
-                {getTopicName(timetable.MON.S2.topic)} (
-                {timetable.MON.S2.assignee})
-              </td>
-              <td>
-                {getTopicName(timetable.MON.S3.topic)} (
-                {timetable.MON.S3.assignee})
-              </td>
-            </tr>
-            <tr>
-              <td>Tuesday</td>
-              <td>
-                {getTopicName(timetable.TUE.S1.topic)} (
-                {timetable.TUE.S1.assignee})
-              </td>
-              <td>
-                {getTopicName(timetable.TUE.S2.topic)} (
-                {timetable.TUE.S2.assignee})
-              </td>
-              <td>
-                {getTopicName(timetable.TUE.S3.topic)} (
-                {timetable.TUE.S3.assignee})
-              </td>
-            </tr>
-            <tr>
-              <td>Wednesday</td>
-              <td>
-                {getTopicName(timetable.WED.S1.topic)} (
-                {timetable.WED.S1.assignee})
-              </td>
-              <td>
-                {getTopicName(timetable.WED.S2.topic)} (
-                {timetable.WED.S2.assignee})
-              </td>
-              <td>
-                {getTopicName(timetable.WED.S3.topic)} (
-                {timetable.WED.S3.assignee})
-              </td>
-            </tr>
-            <tr>
-              <td>Thursday</td>
-              <td>
-                {getTopicName(timetable.THU.S1.topic)} (
-                {timetable.THU.S1.assignee})
-              </td>
-              <td>
-                {getTopicName(timetable.THU.S2.topic)} (
-                {timetable.THU.S2.assignee})
-              </td>
-              <td>
-                {getTopicName(timetable.THU.S3.topic)} (
-                {timetable.THU.S3.assignee})
-              </td>
-            </tr>
-            <tr>
-              <td>Friday</td>
-              <td>
-                {getTopicName(timetable.FRI.S1.topic)} (
-                {timetable.FRI.S1.assignee})
-              </td>
-              <td>
-                {getTopicName(timetable.FRI.S2.topic)} (
-                {timetable.FRI.S2.assignee})
-              </td>
-              <td>
-                {getTopicName(timetable.FRI.S3.topic)} (
-                {timetable.FRI.S3.assignee})
-              </td>
-            </tr>
-            <tr>
-              <td>Saturday</td>
-              <td>
-                {getTopicName(timetable.SAT.S1.topic)} (
-                {timetable.SAT.S1.assignee})
-              </td>
-              <td>
-                {getTopicName(timetable.SAT.S2.topic)} (
-                {timetable.SAT.S2.assignee})
-              </td>
-              <td>
-                {getTopicName(timetable.SAT.S3.topic)} (
-                {timetable.SAT.S3.assignee})
-              </td>
-            </tr>
-            <tr>
-              <td>Sunday</td>
-              <td>
-                {getTopicName(timetable.SUN.S1.topic)} (
-                {timetable.SUN.S1.assignee})
-              </td>
-              <td>
-                {getTopicName(timetable.SUN.S2.topic)} (
-                {timetable.SUN.S2.assignee})
-              </td>
-              <td>
-                {getTopicName(timetable.SUN.S3.topic)} (
-                {timetable.SUN.S3.assignee})
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div id="topics">
-        <h1>Topics</h1>
-        <ul>
-          {topics.map((topic) => (
-            <li key={topic.code}>{topic.name}</li>
-          ))}
-        </ul>
-      </div>
-      <div id="contributors">
-        <h1>Contributors</h1>
-        <ul>
-          {contributors.map((contributor) => (
-            <li key={contributor.code}>
-              {contributor.name} ({contributor.code})
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div id="slots">
-        <h1>Slots</h1>
-        <ul>
-          <li>SLOT 1 (6AM - 11AM)</li>
-          <li>SLOT 2 (12PM - 5PM)</li>
-          <li>SLOT 3 (6PM - 11PM)</li>
-        </ul>
-      </div>
-    </div>
-  );
+    const dispatch = useDispatch();
+    useEffect(() => {
+        fetch("/data/timetable")
+            .then((resp) => resp.json())
+            .then((timetable) => dispatch(setTimetable(timetable.data)));
+        fetch("/data/contributors")
+            .then((resp) => resp.json())
+            .then((contributors) =>
+                dispatch(setContributors(contributors.data))
+            );
+        fetch("/data/topics")
+            .then((resp) => resp.json())
+            .then((topics) => dispatch(setTopics(topics.data)));
+        fetch("/data/configs")
+            .then((resp) => resp.json())
+            .then((configs) => dispatch(setConfigs(configs.data)));
+        return () => {};
+        // eslint-disable-next-line
+    }, []);
+    return (
+        <div>
+            <BrowserRouter>
+                <Switch>
+                    <Route exact path="/" component={Home} />
+                    <Route exact path="/post" component={Post} />
+                    <Route exact path="/questions" component={Questions} />
+                    <Route exact path="/question/:id" component={Question} />
+                </Switch>
+            </BrowserRouter>
+        </div>
+    );
 }
 
 export default App;

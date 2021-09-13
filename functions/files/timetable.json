@@ -1,0 +1,128 @@
+{
+    "0": {
+        "S1": {
+            "topic": "",
+            "assignee": ""
+        },
+        "S2": {
+            "topic": "SD",
+            "assignee": "KM"
+        },
+        "S3": {
+            "topic": "CQ",
+            "assignee": "KM"
+        },
+        "S4": {
+            "topic": "DSA",
+            "assignee": "OM"
+        }
+    },
+    "1": {
+        "S1": {
+            "topic": "DBMS",
+            "assignee": "AR"
+        },
+        "S2": {
+            "topic": "SD",
+            "assignee": "SR"
+        },
+        "S3": {
+            "topic": "CQ",
+            "assignee": "SR"
+        },
+        "S4": {
+            "topic": "DSA",
+            "assignee": "SA"
+        }
+    },
+    "2": {
+        "S1": {
+            "topic": "DBMS",
+            "assignee": "OM"
+        },
+        "S2": {
+            "topic": "SD",
+            "assignee": "SA"
+        },
+        "S3": {
+            "topic": "PC",
+            "assignee": "SR"
+        },
+        "S4": {
+            "topic": "DSA",
+            "assignee": "PB"
+        }
+    },
+    "3": {
+        "S1": {
+            "topic": "CNS",
+            "assignee": "SA"
+        },
+        "S2": {
+            "topic": "CQ",
+            "assignee": "PB"
+        },
+        "S3": {
+            "topic": "PC",
+            "assignee": "SS"
+        },
+        "S4": {
+            "topic": "DSA",
+            "assignee": "SM"
+        }
+    },
+    "4": {
+        "S1": {
+            "topic": "CNS",
+            "assignee": "AR"
+        },
+        "S2": {
+            "topic": "CQ",
+            "assignee": "SM"
+        },
+        "S3": {
+            "topic": "DS",
+            "assignee": "PB"
+        },
+        "S4": {
+            "topic": "APPT",
+            "assignee": "MP"
+        }
+    },
+    "5": {
+        "S1": {
+            "topic": "CNS",
+            "assignee": "MP"
+        },
+        "S2": {
+            "topic": "CQ",
+            "assignee": "MP"
+        },
+        "S3": {
+            "topic": "DS",
+            "assignee": "SM"
+        },
+        "S4": {
+            "topic": "APPT",
+            "assignee": "SS"
+        }
+    },
+    "6": {
+        "S1": {
+            "topic": "SD",
+            "assignee": "AA"
+        },
+        "S2": {
+            "topic": "CQ",
+            "assignee": "AA"
+        },
+        "S3": {
+            "topic": "DSA",
+            "assignee": "SS"
+        },
+        "S4": {
+            "topic": "APPT",
+            "assignee": "OM"
+        }
+    }
+}

@@ -1,0 +1,110 @@
+{
+    "moderator": "AR",
+    "start": 1634409000,
+    "end": 1635013799,
+    "days": [
+        {
+            "code": "0",
+            "name": "SUNDAY"
+        },
+        {
+            "code": "1",
+            "name": "MONDAY"
+        },
+        {
+            "code": "2",
+            "name": "TUESDAY"
+        },
+        {
+            "code": "3",
+            "name": "WEDNESDAY"
+        },
+        {
+            "code": "4",
+            "name": "THURSDAY"
+        },
+        {
+            "code": "5",
+            "name": "FRIDAY"
+        },
+        {
+            "code": "6",
+            "name": "SATURDAY"
+        }
+    ],
+    "slots": [
+        {
+            "code": "S1",
+            "name": "SLOT 1",
+            "startHr": 7,
+            "endHr": 11
+        },
+        {
+            "code": "S2",
+            "name": "SLOT 2",
+            "startHr": 11,
+            "endHr": 15
+        },
+        {
+            "code": "S3",
+            "name": "SLOT 3",
+            "startHr": 15,
+            "endHr": 19
+        },
+        {
+            "code": "S4",
+            "name": "SLOT 4",
+            "startHr": 19,
+            "endHr": 22
+        }
+    ],
+    "languages": [
+        {
+            "code": "c",
+            "name": "C Programming"
+        },
+        {
+            "code": "css",
+            "name": "CSS styles"
+        },
+        {
+            "code": "cpp",
+            "name": "C++ Programming"
+        },
+        {
+            "code": "go",
+            "name": "GoLang"
+        },
+        {
+            "code": "html",
+            "name": "HTML"
+        },
+        {
+            "code": "java",
+            "name": "Java Programming"
+        },
+        {
+            "code": "javascript",
+            "name": "Javascript"
+        },
+        {
+            "code": "jsx",
+            "name": "JSX"
+        },
+        {
+            "code": "python",
+            "name": "Python"
+        },
+        {
+            "code": "rust",
+            "name": "Rust"
+        },
+        {
+            "code": "typescript",
+            "name": "Typescript"
+        }
+    ],
+    "ignore": [
+        "SD"
+    ]
+}

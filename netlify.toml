@@ -2,8 +2,8 @@
 directory = "functions"
 
 [[redirects]]
-from = "/screenshot/*"
-to = "/.netlify/functions/screenshot"
+from = "/test/*"
+to = "/.netlify/functions/test"
 status = 200
 force = true
 
@@ -12,3 +12,32 @@ from = "/webhook/*"
 to = "/.netlify/functions/webhook"
 status = 200
 force = true
+
+[[redirects]]
+from = "/login/*"
+to = "/.netlify/functions/login"
+status = 200
+force = true
+
+[[redirects]]
+from = "/MCQ/*"
+to = "/.netlify/functions/MCQ"
+status = 200
+force = true
+
+[[redirects]]
+from = "/code2img/*"
+to = "/.netlify/functions/code2img"
+status = 200
+force = true
+
+[[redirects]]
+from = "/data/*"
+to = "/.netlify/functions/data"
+status = 200
+force = true
+
+[[redirects]]
+from = "/*"
+to = "/"
+status = 200

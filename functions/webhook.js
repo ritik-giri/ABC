@@ -1,46 +1,33 @@
-const TelegramBot = require('node-telegram-bot-api');
+const telegram = require("node-telegram-bot-api");
 
 exports.handler = async (event, context) => {
+    const rawUrl = new URL(event.rawUrl).origin;
     const api_key = event.queryStringParameters.api_key;
 
-    if (api_key != process.env.api_key) {
+    if (api_key !== process.env.api_key) {
         return {
             statusCode: 403,
             headers: {
                 "content-type": `application/json`,
             },
-            body: JSON.stringify({OK: false, error: 'Unauthorized'}),
+            body: JSON.stringify({ OK: false, error: "Unauthorized" }),
             isBase64Encoded: false,
         };
     }
 
-    const token = process.env.bot_token;
-    const bot = new TelegramBot(token, {polling: false});
-    const imageUrl = `https://${event.headers.host}/screenshot/table?id=${context.awsRequestId}`;
-    var caption = `🔔 <b>New MCQ schedule published</b>
-
-❔ <b>Important links</b>:
-    - <a href="https://${event.headers.host}/#timetable">Timetable</a>
-    - <a href="https://${event.headers.host}/#moderator">Moderator</a>
-    - <a href="https://${event.headers.host}/#topics">Topics</a>
-    - <a href="https://${event.headers.host}/#contributors">Contributors</a>
-    - <a href="https://${event.headers.host}/#slots">Slots</a>`;
-   
-
-    const sendPhotoOptions = {
-        caption: caption,
-        parse_mode: 'HTML'
-    }
+    const { admin_chat_id, bot_token } = process.env;
+    const bot = new telegram(bot_token, { polling: false });
+    const text = "Netlify site is updated. View updated site @ " + rawUrl;
 
     try {
-        const sendPhoto = await bot.sendPhoto(process.env.chat_id, imageUrl, sendPhotoOptions);
-        const pinMessage = await bot.pinChatMessage(process.env.chat_id, sendPhoto.message_id);
+        await bot.sendMessage(`-100${admin_chat_id}`, text);
+
         return {
             statusCode: 200,
             headers: {
                 "content-type": `application/json`,
             },
-            body: JSON.stringify({OK: true}),
+            body: JSON.stringify({ OK: true }),
             isBase64Encoded: false,
         };
     } catch (error) {
@@ -49,7 +36,10 @@ exports.handler = async (event, context) => {
             headers: {
                 "content-type": `application/json`,
             },
-            body: JSON.stringify({OK: false, error: error, imageUrl: imageUrl}),
+            body: JSON.stringify({
+                OK: false,
+                error: error.message,
+            }),
             isBase64Encoded: false,
         };
     }
