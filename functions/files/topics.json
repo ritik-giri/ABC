@@ -6,54 +6,7 @@
         "coverage": [
             "SM",
             "PB",
-            "SA",
-            "SR",
-            "KM",
-            "AA",
-            "OM",
-            "SS",
-            "MP"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Data Structure and Algorithms",
-        "code": "DSA",
-        "slots": 5,
-        "coverage": [
-            "SM",
-            "PB",
-            "SA",
-            "OM",
-            "SS"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Data Science",
-        "code": "DS",
-        "slots": 2,
-        "coverage": [
-            "SA",
-            "OM",
-            "SS",
-            "SR",
-            "SM",
-            "PB"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Psudo Code",
-        "code": "PC",
-        "slots": 2,
-        "coverage": [
-            "SM",
-            "PB",
-            "SA",
-            "OM",
-            "SS",
-            "SR"
+            "SA"
         ],
         "ignore": []
     },
@@ -62,37 +15,25 @@
         "code": "CQ",
         "slots": 6,
         "coverage": [
-            "SR",
-            "KM",
-            "AA",
-            "MP",
+            "SA",
+            "OM",
+            "SS",
             "SM",
-            "PB"
+            "PB",
+            "SR"
         ],
         "ignore": []
     },
     {
-        "name": "Software Development",
-        "code": "SD",
-        "slots": 4,
-        "ignore": [
-            "OM"
-        ],
+        "name": "Data Structure and Algorithms",
+        "code": "DSA",
+        "slots": 5,
         "coverage": [
-            "SA",
             "SR",
             "KM",
-            "AA"
-        ]
-    },
-    {
-        "name": "Computer Networking & Security",
-        "code": "CNS",
-        "slots": 3,
-        "coverage": [
+            "AA",
             "MP",
-            "AR",
-            "SA"
+            "SM"
         ],
         "ignore": []
     },
@@ -106,8 +47,68 @@
             "KM",
             "AA",
             "OM",
-            "AR"
+            "AR",
+            "SA",
+            "SS"
         ],
         "ignore": []
+    },
+    {
+        "name": "Computer Networking & Security",
+        "code": "CNS",
+        "slots": 3,
+        "coverage": [
+            "MP",
+            "AR",
+            "SA",
+            "PB",
+            "OM",
+            "SS"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Psudo Code",
+        "code": "PC",
+        "slots": 2,
+        "coverage": [
+            "SM",
+            "PB",
+            "SA",
+            "OM",
+            "SS",
+            "SR",
+            "KM",
+            "AA"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Data Science",
+        "code": "DS",
+        "slots": 2,
+        "coverage": [
+            "SA",
+            "OM",
+            "SS",
+            "SR",
+            "SM",
+            "PB",
+            "KM",
+            "AA"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Software Development",
+        "code": "SD",
+        "slots": 4,
+        "ignore": [
+            "OM"
+        ],
+        "coverage": [
+            "MP",
+            "SR"
+        ]
     }
 ]
