@@ -46,6 +46,7 @@ class Question extends React.Component {
         super(props);
         this.state = {
             data: {},
+            method: null,
             confirmed: false,
             showModal: false,
             showAlert: false,
@@ -53,9 +54,22 @@ class Question extends React.Component {
     }
 
     componentDidMount() {
+        this.postMCQ = this.postMCQ.bind(this);
         this.loadData = this.loadData.bind(this);
         this.reviewMCQ = this.reviewMCQ.bind(this);
         this.loadData();
+    }
+
+    showAlert(variant, text) {
+        this.setState(
+            {
+                textAlert: text,
+                showAlert: true,
+                showModal: false,
+                variantAlert: variant,
+            },
+            window.scrollTo(0, 0)
+        );
     }
 
     loadData() {
@@ -101,24 +115,47 @@ class Question extends React.Component {
         })
             .then((resp) => resp.json())
             .then((data) => {
-                if (data.OK) {
-                    this.loadData();
-                    this.setState({
-                        confirmed: false,
-                        showModal: false,
-                        showAlert: true,
-                        variant: "success",
-                        alertText: data.message,
-                    });
-                } else throw Error(data.error);
+                if (data.OK) this.showAlert("success", data.message);
+                else throw Error(data.error);
             })
             .catch((error) => {
+                this.showAlert("danger", error.message);
+            })
+            .finally(() => {
+                this.loadData();
                 this.setState({
                     confirmed: false,
                     showModal: false,
-                    showAlert: true,
-                    variant: "danger",
-                    alertText: error.message,
+                });
+            });
+    }
+
+    postMCQ() {
+        this.setState({ confirmed: true });
+        const token = this.props.cookies.get("tokenId");
+        const {
+            data: { docId: id },
+        } = this.state;
+
+        fetch(`/MCQ/post?id=${id}`, {
+            method: "POST",
+            headers: {
+                token,
+            },
+        })
+            .then((resp) => resp.json())
+            .then((data) => {
+                if (data.OK) this.showAlert("success", data.message);
+                else throw Error(data.error);
+            })
+            .catch((error) => {
+                this.showAlert("danger", error.message);
+            })
+            .finally(() => {
+                this.loadData();
+                this.setState({
+                    confirmed: false,
+                    showModal: false,
                 });
             });
     }
@@ -264,6 +301,7 @@ class Question extends React.Component {
                                             onClick={() =>
                                                 this.setState({
                                                     showModal: false,
+                                                    method: "",
                                                 })
                                             }
                                         >
@@ -272,7 +310,13 @@ class Question extends React.Component {
                                     )}
                                     <Button
                                         variant="primary"
-                                        onClick={this.reviewMCQ}
+                                        onClick={
+                                            this.state.method == null
+                                                ? ""
+                                                : this.state.method === "review"
+                                                ? this.reviewMCQ
+                                                : this.postMCQ
+                                        }
                                         disabled={this.state.confirmed}
                                     >
                                         {this.state.confirmed ? (
@@ -289,12 +333,46 @@ class Question extends React.Component {
                                     </Button>
                                 </Modal.Footer>
                             </Modal>
-                            {!this.state.data.published &&
+                            {this.state.data.approved &&
+                                this.props.state.auth &&
+                                (this.props.state.user.code ===
+                                    this.state.data.author ||
+                                    this.props.state.user.admin) &&
+                                !this.state.data.poll_id &&
+                                (moment().utcOffset("+05:30").unix() >=
+                                    this.state.data.schedule ||
+                                    this.props.state.user.admin) && (
+                                    <Alert show={true} variant="success">
+                                        <p>
+                                            The question is APPROVED but not
+                                            PUBLISHED yet. Click below button to
+                                            publish.
+                                        </p>
+                                        <div>
+                                            <Button
+                                                variant="success"
+                                                onClick={() =>
+                                                    this.setState({
+                                                        showModal: true,
+                                                        modalText:
+                                                            "Confirm this action?",
+                                                        action: "approve",
+                                                        method: "post",
+                                                    })
+                                                }
+                                            >
+                                                Publish
+                                            </Button>{" "}
+                                        </div>
+                                    </Alert>
+                                )}
+
+                            {!this.state.data.approved &&
                                 this.props.state.auth &&
                                 this.props.state.user.admin && (
                                     <Alert show={true} variant="warning">
                                         <p>
-                                            The question is not published yet.
+                                            The question is not approved yet.
                                             Please use the below buttons to
                                             approve or decline.
                                         </p>
@@ -307,6 +385,7 @@ class Question extends React.Component {
                                                         modalText:
                                                             "Once APPROVED, you will not be able to edit this question.",
                                                         action: "approve",
+                                                        method: "review",
                                                     })
                                                 }
                                             >
@@ -318,8 +397,9 @@ class Question extends React.Component {
                                                     this.setState({
                                                         showModal: true,
                                                         modalText:
-                                                            "Once DECLINED, you will not be able to recover this question.",
+                                                            "Once DECLINED, you will be deleted and cannot be recovered.",
                                                         action: "decline",
+                                                        method: "review",
                                                     })
                                                 }
                                             >

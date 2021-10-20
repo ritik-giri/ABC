@@ -1,9 +1,11 @@
 const Joi = require("joi");
+const moment = require("moment");
 
 const validateHeaders = (headers) => {
     const headersSchema = Joi.object()
         .keys({
             token: Joi.string().optional(),
+            api_key: Joi.string().optional(),
         })
         .options({
             stripUnknown: true,
@@ -13,13 +15,16 @@ const validateHeaders = (headers) => {
 };
 
 const validateMCQCreate = (body) => {
+    const week = moment().utcOffset("+05:30").week();
+    const year = moment().utcOffset("+05:30").year();
+
     const createSchema = Joi.object()
         .keys({
-            date: Joi.date().default(Date.now()),
+            date: Joi.date().default(moment.unix()),
             question: Joi.string().required(),
             topic: Joi.string().required(),
             code: Joi.string().optional(),
-            language: Joi.string().when('code', {
+            language: Joi.string().when("code", {
                 is: Joi.exist(),
                 then: Joi.required(),
             }),
@@ -29,8 +34,10 @@ const validateMCQCreate = (body) => {
             option_3_value: Joi.string().required(),
             option_4_value: Joi.string().required(),
             correct_option: Joi.string().required(),
-            published: Joi.boolean().default(false),
+            approved: Joi.boolean().default(false),
             author: Joi.string().optional(),
+            week: Joi.number().default(week),
+            year: Joi.number().default(year),
         })
         .options({
             stripUnknown: true,
@@ -42,7 +49,9 @@ const validateMCQCreate = (body) => {
 const validateMCQList = (query) => {
     const listSchema = Joi.object()
         .keys({
-            cursor: Joi.string().optional(),
+            week: Joi.number().optional(),
+            year: Joi.number().optional(),
+            cursor: Joi.number().optional(),
             lang: Joi.string().optional(),
             topic: Joi.string().optional(),
             author: Joi.string().optional(),
@@ -66,7 +75,7 @@ const validateMCQQuestion = (query) => {
     return Joi.compile(questionSchema).validate(query);
 };
 
-const validateMCQreview = (body, headers) => {
+const validateMCQreview = (body) => {
     const reviewSchema = Joi.object()
         .keys({
             id: Joi.string().required(),
@@ -79,10 +88,36 @@ const validateMCQreview = (body, headers) => {
     return Joi.compile(reviewSchema).validate(body);
 };
 
+const validateMCQschedule = (query) => {
+    const reviewSchema = Joi.object()
+        .keys({
+            topic: Joi.string().required(),
+        })
+        .options({
+            stripUnknown: true,
+        });
+
+    return Joi.compile(reviewSchema).validate(query);
+};
+
+const validateMCQpost = (query) => {
+    const reviewSchema = Joi.object()
+        .keys({
+            id: Joi.string().required(),
+        })
+        .options({
+            stripUnknown: true,
+        });
+
+    return Joi.compile(reviewSchema).validate(query);
+};
+
 module.exports = {
     validateHeaders,
     validateMCQCreate,
     validateMCQList,
     validateMCQQuestion,
     validateMCQreview,
+    validateMCQschedule,
+    validateMCQpost,
 };

@@ -217,7 +217,7 @@ class Questions extends React.Component {
                         <>
                             {this.state.data.map(
                                 (d) =>
-                                    (this.props.state.auth || d.published) && (
+                                    (this.props.state.auth || d.approved) && (
                                         <Link
                                             to={"/question/" + d.docId}
                                             key={d.docId}
@@ -228,9 +228,9 @@ class Questions extends React.Component {
                                         >
                                             <CustomCard
                                                 style={{
-                                                    borderColor: d.published
-                                                        ? "inherit"
-                                                        : "red",
+                                                    borderColor: !d.approved
+                                                        ? "red"
+                                                        : d.poll_id ? "inherit": "",
                                                 }}
                                             >
                                                 <Card.Body>

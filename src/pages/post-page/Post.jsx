@@ -59,6 +59,7 @@ class Post extends React.Component {
     componentDidMount() {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.updateData = this.updateData.bind(this);
+        this.findSlot = this.findSlot.bind(this);
         this.postMCQ = this.postMCQ.bind(this);
     }
 
@@ -71,6 +72,18 @@ class Post extends React.Component {
         }
 
         this.setState(() => ({ validated: true }));
+    }
+
+    showAlert(variant, text) {
+        this.setState(
+            {
+                textAlert: text,
+                showAlert: true,
+                showModal: false,
+                variantAlert: variant,
+            },
+            window.scrollTo(0, 0)
+        );
     }
 
     postMCQ() {
@@ -88,26 +101,55 @@ class Post extends React.Component {
             .then((resp) => resp.json())
             .then((data) => {
                 if (data.OK) {
-                    this.setState({
-                        confirmed: false,
-                        showModal: false,
-                        showAlert: true,
-                        variantAlert: "success",
-                        textAlert:
-                            "Question is submitted successfully and is ready for review. Redirecting to preview in 3secs...",
-                    });
+                    this.showAlert(
+                        "success",
+                        "Question is submitted successfully and is ready for review. Redirecting to preview in 3secs..."
+                    );
                     setTimeout(() => {
                         this.props.history.push(`/question/${data.docId}`);
                     }, 3000);
                 } else throw Error(data.error);
             })
             .catch((err) => {
+                this.showAlert(
+                    "danger",
+                    `Question submission failed with Error: ${err.message}`
+                );
+            })
+            .finally(() => {
                 this.setState({
                     confirmed: false,
-                    showModal: false,
-                    showAlert: true,
-                    variantAlert: "danger",
-                    textAlert: `Question is submission failed with Error: ${err.message}`,
+                });
+            });
+    }
+
+    findSlot() {
+        this.setState({
+            confirmed: true,
+        });
+        const token = this.props.cookies.get("tokenId");
+        fetch(`/MCQ/schedule?topic=${this.state.data.topic}`, {
+            headers: {
+                token,
+            },
+        })
+            .then((resp) => resp.json())
+            .then((data) => {
+                if (data.OK) {
+                    this.setState({
+                        data: { ...this.state.data, schedule: data.schedule },
+                    });
+                } else throw Error(data.error);
+            })
+            .catch((err) => {
+                this.showAlert(
+                    "danger",
+                    `Question slot search failed with Error: ${err.message}`
+                );
+            })
+            .finally(() => {
+                this.setState({
+                    confirmed: false,
                 });
             });
     }
@@ -322,7 +364,11 @@ class Post extends React.Component {
                                                 </Form.Control.Feedback>
                                             </InputGroup>
                                         </Form.Group>
-                                        <Button type="submit" variant="primary">
+                                        <Button
+                                            type="submit"
+                                            disabled={this.state.confirmed}
+                                            variant="primary"
+                                        >
                                             Post Question
                                         </Button>
                                     </Form>
@@ -427,7 +473,11 @@ class Post extends React.Component {
                                             )}
                                             <Button
                                                 variant="primary"
-                                                onClick={this.postMCQ}
+                                                onClick={
+                                                    this.state.data.schedule
+                                                        ? this.postMCQ
+                                                        : this.findSlot
+                                                }
                                                 disabled={this.state.confirmed}
                                             >
                                                 {this.state.confirmed ? (
@@ -438,8 +488,10 @@ class Post extends React.Component {
                                                         role="status"
                                                         aria-hidden="true"
                                                     />
+                                                ) : this.state.data.schedule ? (
+                                                    "Confirm"
                                                 ) : (
-                                                    "Understood"
+                                                    "Find Slot"
                                                 )}
                                             </Button>
                                         </Modal.Footer>

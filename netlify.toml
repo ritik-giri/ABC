@@ -8,6 +8,12 @@ status = 200
 force = true
 
 [[redirects]]
+from = "/telegram/*"
+to = "/.netlify/functions/telegram"
+status = 200
+force = true
+
+[[redirects]]
 from = "/webhook/*"
 to = "/.netlify/functions/webhook"
 status = 200
