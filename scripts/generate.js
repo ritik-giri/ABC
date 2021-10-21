@@ -53,14 +53,16 @@ const moment = require("moment")().utcOffset("+05:30");
         assets.reverse();
         for (let i = 0; i < topic.slots; i++) {
             if (!assets.length) break;
+            contributors[child].slots -= 1;
             const contributor = assets.pop();
             const child = contributors.findIndex((c) => c.code === contributor);
             topics[index].coverage.push(contributor);
-            contributors[child].slots -= 1;
             assignment.push([topic.code, contributor]);
         }
     }
 
+    configs.end = moment.endOf("week").unix();
+    configs.start = moment.startOf("week").unix();
     const days = configs.days.map((day) => day.code);
     const slots = configs.slots.map((slot) => slot.code);
 
@@ -68,10 +70,11 @@ const moment = require("moment")().utcOffset("+05:30");
         for (const day of days) {
             if (day === "0" && slot === "S1") continue;
             if (assignment.length) {
-                const [topic, assignee] = assignment.pop();
+                const [topic, assignee, ignore] = [...assignment.pop(), false];
 
                 timetable[day][slot] = {
                     topic,
+                    ignore,
                     assignee,
                 };
             } else {
@@ -83,8 +86,6 @@ const moment = require("moment")().utcOffset("+05:30");
         }
     }
     
-    configs.end = moment.endOf("week").unix();
-    configs.start = moment.startOf("week").unix();
 
     writeFileSync(
         `${root}/functions/files/topics.json`,
@@ -93,20 +94,6 @@ const moment = require("moment")().utcOffset("+05:30");
             (key, value) => (key === "count" ? undefined : value),
             4
         )
-    );
-
-    writeFileSync(
-        `${root}/functions/files/contributors.json`,
-        JSON.stringify(
-            contributors,
-            (key, value) => (key === "slots" ? undefined : value),
-            4
-        )
-    );
-
-    writeFileSync(
-        `${root}/functions/files/configs.json`,
-        JSON.stringify(configs, null, 4)
     );
 
     writeFileSync(
