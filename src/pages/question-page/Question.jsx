@@ -168,7 +168,7 @@ class Question extends React.Component {
     }
 
     timestampToDate(timestamp) {
-        return moment(timestamp).format("lll");
+        return moment(timestamp, 'X').format("lll");
     }
 
     render() {
@@ -179,12 +179,12 @@ class Question extends React.Component {
                 <Container style={{ padding: "20px" }}>
                     <Alert
                         show={this.state.showAlert}
-                        variant={this.state.variant}
+                        variant={this.state.variantAlert}
                         className="rounded-0"
                         onClose={() => this.setState({ showAlert: false })}
                         dismissible
                     >
-                        {this.state.alertText}
+                        {this.state.textAlert}
                     </Alert>
                     {_.isEmpty(this.state.data) ||
                     !this.props.state.contributors ? (

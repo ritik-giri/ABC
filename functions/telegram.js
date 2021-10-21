@@ -1,19 +1,23 @@
 const telegram = require("node-telegram-bot-api");
 
 const { bot_token, admin_chat_id, api_key } = process.env;
+
 const bot = new telegram(bot_token, { polling: false });
 
 exports.handler = async (event, context) => {
     try {
         if (event.headers.key !== api_key) throw Error("!AUTH");
-        else await bot.sendMessage(admin_chat_id, event.body);
+        else
+            await bot.sendMessage(`-100${admin_chat_id}`, event.body, {
+                parse_mode: "HTML",
+            });
 
         return {
             statusCode: 200,
             headers: {
                 "content-type": `application/json`,
             },
-            body: { OK: true },
+            body: JSON.stringify({ OK: true }),
             isBase64Encoded: false,
         };
     } catch (e) {
@@ -22,7 +26,7 @@ exports.handler = async (event, context) => {
             headers: {
                 "content-type": `application/json`,
             },
-            body: { OK: false, error: e.message },
+            body: JSON.stringify({ OK: false, error: e.message }),
             isBase64Encoded: false,
         };
     }

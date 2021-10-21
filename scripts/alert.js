@@ -1,9 +1,12 @@
 const root = process.cwd();
-const fetch = require("node-fetch");
 const { readFileSync } = require("fs");
-const headers = { key: process.env.api_key };
+const headers = { key: process.env.api_key || "12345" };
 const moment = require("moment")().utcOffset("+05:30");
 const baseUrl = process.env.baseUrl || "http://localhost:8888";
+const fetch = (...args) =>
+    import("node-fetch").then(({ default: fetch }) => fetch(...args));
+
+console.log(`Current baseUrl is ${baseUrl}`);
 
 function main() {
     const configs = JSON.parse(
@@ -59,6 +62,8 @@ function main() {
         ];
     }
 
+    const mention = `<a href="tg://user?id=${assignee.telegram}">${assignee.name}</a>`;
+
     return fetch(
         `${baseUrl}/MCQ/list?week=${week}&year=${year}&topic=${_topic}&author=${_assignee}`,
         {
@@ -71,9 +76,9 @@ function main() {
             if (!list.OK || !list.count) {
                 return [
                     false,
-                    `Contributor "${assignee.name}" has been assigned with topic "${topic.name}", ` +
-                        `Scheduler cannot find any question with the given topic from the contrbutor. ` +
-                        `If not posted till now. Then post it ASAP.`,
+                    `Contributor ${mention} has been assigned with topic ${topic.name}, ` +
+                        `Scheduler cannot find any question with the given topic from the assigned contributor. ` +
+                        `Please post the question if not posted yet.`,
                 ];
             } else {
                 const [question] = list.response;
@@ -91,13 +96,13 @@ function main() {
                                 if (post.OK) {
                                     return [
                                         true,
-                                        `Approved question from contributor ${assignee.name} with topic ${topic.name} was unpublished. ` +
+                                        `Approved question from contributor ${mention} with topic ${topic.name} was unpublished. ` +
                                             `It has been published now.`,
                                     ];
                                 } else {
                                     return [
                                         false,
-                                        `Approved question from contributor ${assignee.name} with topic ${topic.name} was unpublished. ` +
+                                        `Approved question from contributor ${mention} with topic ${topic.name} was unpublished. ` +
                                             `Attempt to publish the question failed with the following error: ${post.error}`,
                                     ];
                                 }
@@ -108,14 +113,14 @@ function main() {
                     } else {
                         return [
                             true,
-                            `Contributor "${assignee.name}" has already published question for assigned topic "${topic.name}"`,
+                            `Contributor ${mention} has already published question for assigned topic ${topic.name}`,
                         ];
                     }
                 } else {
                     return [
                         false,
-                        `Unapproved question from contributor ${assignee.name} with topic ${topic.name} was unpublished. ` +
-                            `Please approve or decline it ASAP.`,
+                        `Unapproved question from contributor ${mention} with topic ${topic.name} was unpublished. ` +
+                            `Please approve or decline it.`,
                     ];
                 }
             }
@@ -128,12 +133,12 @@ function main() {
 (async function () {
     try {
         const [success, response] = await main();
-        if (success) console.log(`Main: ${response}`);
+        if (success) console.log(`Main: ${response.replace(/<[^>]+>/g, "")}`);
         else throw Error(response);
     } catch (e) {
-        console.log(`Error: ${e.message}`);
+        console.log(`Error: ${e.message.replace(/<[^>]+>/g, "")}`);
         fetch(`${baseUrl}/telegram`, {
-            body: e.message,
+            body: String(e.message),
             method: "POST",
             headers,
         });

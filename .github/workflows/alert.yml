@@ -18,3 +18,7 @@ jobs:
             - name: Alert
               run: |
                   yarn add moment node-fetch && yarn alert
+              env:
+                  api_key: ${{ secrets.API_KEY }}
+                  baseUrl: ${{ secrets.BASEURL }}
+

@@ -149,7 +149,7 @@ class Questions extends React.Component {
     }
 
     timestampToDate(timestamp) {
-        return moment(timestamp).format("lll");
+        return moment(timestamp, 'X').format("lll");
     }
 
     updateData(e) {
@@ -230,7 +230,7 @@ class Questions extends React.Component {
                                                 style={{
                                                     borderColor: !d.approved
                                                         ? "red"
-                                                        : d.poll_id ? "inherit": "",
+                                                        : d.poll_id ? "inherit": "blue",
                                                 }}
                                             >
                                                 <Card.Body>

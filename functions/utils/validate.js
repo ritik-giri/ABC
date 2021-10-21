@@ -5,7 +5,7 @@ const validateHeaders = (headers) => {
     const headersSchema = Joi.object()
         .keys({
             token: Joi.string().optional(),
-            api_key: Joi.string().optional(),
+            key: Joi.string().optional(),
         })
         .options({
             stripUnknown: true,
@@ -15,15 +15,16 @@ const validateHeaders = (headers) => {
 };
 
 const validateMCQCreate = (body) => {
+    const date = moment().utcOffset("+05:30").unix()
     const week = moment().utcOffset("+05:30").week();
     const year = moment().utcOffset("+05:30").year();
 
     const createSchema = Joi.object()
         .keys({
-            date: Joi.date().default(moment.unix()),
             question: Joi.string().required(),
             topic: Joi.string().required(),
             code: Joi.string().optional(),
+            schedule: Joi.number().required(),
             language: Joi.string().when("code", {
                 is: Joi.exist(),
                 then: Joi.required(),
@@ -38,6 +39,7 @@ const validateMCQCreate = (body) => {
             author: Joi.string().optional(),
             week: Joi.number().default(week),
             year: Joi.number().default(year),
+            date: Joi.date().default(date),
         })
         .options({
             stripUnknown: true,

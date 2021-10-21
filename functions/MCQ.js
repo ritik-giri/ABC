@@ -105,7 +105,7 @@ exports.handler = async (event, context) => {
                             const { assignee, topic } = timetable[day][slot];
 
                             if (
-                                assignee === query.assignee &&
+                                assignee === contributor.code &&
                                 topic === query.topic
                             ) {
                                 return configs.slots.map((s) => {
@@ -618,7 +618,7 @@ exports.handler = async (event, context) => {
 
             await bot.sendMessage(
                 `-100${admin_chat_id}`,
-                `. This question is published on telegram group.`,
+                `This question is published on telegram group.`,
                 {
                     reply_to_message_id: admin_message_id,
                     reply_markup: set({}, "inline_keyboard[0]", [
