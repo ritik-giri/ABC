@@ -1,6 +1,6 @@
 const root = process.cwd();
 const { readFileSync } = require("fs");
-const headers = { key: process.env.api_key || "12345" };
+const headers = { key: process.env.api_key };
 const moment = require("moment")().utcOffset("+05:30");
 const baseUrl = process.env.baseUrl || "http://localhost:8888";
 const fetch = (...args) =>
@@ -32,7 +32,7 @@ function main() {
     const slot = configs.slots.find((s) => hour >= s.startHr && hour < s.endHr);
 
     if (!slot) {
-        return [0, "No active slot running. Alert job cancelled."];
+        return [true, "No active slot running. Alert job cancelled."];
     }
 
     const schedule = timetable[day][slot.code];
@@ -45,7 +45,7 @@ function main() {
         ];
     }
 
-    if (configs.ignore.includes(_assignee)) {
+    if (configs.ignore.includes(_assignee) || schedule.ignore) {
         return [
             true,
             "The assignee has requested not to be disturbed for the assigned slot. Alert Job canncelled",
@@ -54,15 +54,14 @@ function main() {
 
     const topic = topics.find((t) => t.code === _topic);
     const assignee = contributors.find((c) => c.code === _assignee);
+    const mention = `<a href="tg://user?id=${assignee.telegram}">${assignee.name}</a>`;
 
     if (!topic || !assignee) {
         return [
             true,
-            "Either the topic is removed from the list or the assignee has left the MCQ team. Alert job cancelled.",
+            "Either the topic is removed from the topic list or the assignee has left the MCQ team. Alert job cancelled.",
         ];
     }
-
-    const mention = `<a href="tg://user?id=${assignee.telegram}">${assignee.name}</a>`;
 
     return fetch(
         `${baseUrl}/MCQ/list?week=${week}&year=${year}&topic=${_topic}&author=${_assignee}`,
@@ -96,13 +95,13 @@ function main() {
                                 if (post.OK) {
                                     return [
                                         true,
-                                        `Approved question from contributor ${mention} with topic ${topic.name} was unpublished. ` +
+                                        `Approved question from contributor ${mention} with topic '${topic.name}' was unpublished. ` +
                                             `It has been published now.`,
                                     ];
                                 } else {
                                     return [
                                         false,
-                                        `Approved question from contributor ${mention} with topic ${topic.name} was unpublished. ` +
+                                        `Approved question from contributor ${mention} with topic '${topic.name}' was unpublished. ` +
                                             `Attempt to publish the question failed with the following error: ${post.error}`,
                                     ];
                                 }
@@ -113,13 +112,13 @@ function main() {
                     } else {
                         return [
                             true,
-                            `Contributor ${mention} has already published question for assigned topic ${topic.name}`,
+                            `Contributor ${mention} has already published question for assigned topic '${topic.name}'`,
                         ];
                     }
                 } else {
                     return [
                         false,
-                        `Unapproved question from contributor ${mention} with topic ${topic.name} was unpublished. ` +
+                        `Unapproved question from contributor ${mention} with topic '${topic.name}' was unpublished. ` +
                             `Please approve or decline it.`,
                     ];
                 }
