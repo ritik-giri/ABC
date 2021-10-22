@@ -86,7 +86,8 @@
         },
         "S4": {
             "topic": "APPT",
-            "assignee": "SM"
+            "assignee": "SM",
+            "ignore": true
         }
     },
     "5": {
@@ -96,11 +97,13 @@
         },
         "S2": {
             "topic": "DSA",
-            "assignee": "SM"
+            "assignee": "SM",
+            "ignore": true
         },
         "S3": {
             "topic": "CQ",
-            "assignee": "SM"
+            "assignee": "SM",
+            "ignore": true
         },
         "S4": {
             "topic": "",
