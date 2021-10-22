@@ -1,7 +1,10 @@
 const root = process.cwd();
-const shuffle = require("lodash.shuffle")
+const shuffle = require("lodash.shuffle");
+const headers = { key: process.env.api_key };
 const { readFileSync, writeFileSync } = require("fs");
 const moment = require("moment")().utcOffset("+05:30");
+const fetch = (...args) =>
+    import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
 (async function () {
     const assignment = [];
@@ -100,4 +103,10 @@ const moment = require("moment")().utcOffset("+05:30");
         `${root}/functions/files/timetable.json`,
         JSON.stringify(timetable, null, 4)
     );
+
+    fetch(`${baseUrl}/telegram`, {
+        body: String("New timetable generated. Once netlify deploys the site, Please find the updated timetable."),
+        method: "POST",
+        headers,
+    });
 })();

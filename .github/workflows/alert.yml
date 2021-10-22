@@ -16,10 +16,6 @@ jobs:
               with:
                   node-version: "14"
                   cache: 'yarn'
-            - uses: actions/cache@v2
-              with:
-                  path: '**/node_modules'
-                  key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
             - name: Alert
               run: |
                   yarn add moment node-fetch && yarn alert
