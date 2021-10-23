@@ -121,7 +121,7 @@ class Questions extends React.Component {
 
                 if (OK) {
                     const data = this.state.data || [];
-                    this.setState({ data: [...data, ...response] });
+                    this.setState({ data: _.uniqBy([...data, ...response], 'docId') });
                     if (nextPage) {
                         this.setState({
                             nextCursor,
