@@ -103,8 +103,8 @@ const fetch = (...args) =>
         `${root}/functions/files/timetable.json`,
         JSON.stringify(timetable, null, 4)
     );
-
-    fetch(`${baseUrl}/telegram`, {
+    
+    fetch(`${process.env.baseUrl}/telegram`, {
         body: String("New timetable generated. Once netlify deploys the site, Please find the updated timetable."),
         method: "POST",
         headers,
