@@ -56,11 +56,11 @@ const fetch = (...args) =>
         assets.reverse();
         for (let i = 0; i < topic.slots; i++) {
             if (!assets.length) break;
-            contributors[child].slots -= 1;
             const contributor = assets.pop();
             const child = contributors.findIndex((c) => c.code === contributor);
-            topics[index].coverage.push(contributor);
             assignment.push([topic.code, contributor]);
+            topics[index].coverage.push(contributor);
+            contributors[child].slots -= 1;
         }
     }
 
