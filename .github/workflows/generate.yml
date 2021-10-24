@@ -19,7 +19,7 @@ jobs:
             - name: Generate
               run: |
                   yarn add moment lodash.shuffle node-fetch && yarn generate
-                  git add function/files && git commit -m "auto-gen timetable: $(date)" && git push
+                  git add functions/files && git commit -m "auto-gen timetable: $(date)" && git push
               env:
                   api_key: ${{ secrets.API_KEY }}
                   baseUrl: ${{ secrets.BASEURL }}
