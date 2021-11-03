@@ -32,7 +32,20 @@ const theme = sample([
 
 exports.handler = async (event, context) => {
     const name = event.queryStringParameters.id;
+    const edit = event.queryStringParameters.edit;
+    const api_key = event.queryStringParameters.api_key;
     const language = event.queryStringParameters.language;
+
+    if (api_key !== process.env.API_KEY) {
+        return {
+            statusCode: 403,
+            headers: {
+                "content-type": `application/json`,
+            },
+            body: JSON.stringify({ OK: false, error: "Unauthorized" }),
+            isBase64Encoded: false,
+        };
+    }
 
     if (!event.body || !language || !name) {
         return {
@@ -49,7 +62,7 @@ exports.handler = async (event, context) => {
     const [exists] = await file.exists();
     console.log(`file ${name}.png exists: ${exists}`);
 
-    if (!exists) {
+    if (!exists || edit) {
         const response = await fetch(
             `https://code2img.vercel.app/api/to-image?language=${language}&theme=${theme}&padding=0`,
             {

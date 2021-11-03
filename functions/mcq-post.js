@@ -1,17 +1,3 @@
-const {
-    map,
-    set,
-    last,
-    uniq,
-    take,
-    omit,
-    indexOf,
-    compact,
-    matches,
-    flattenDeep,
-    find,
-} = require("lodash");
-
 const fetch = require("node-fetch");
 const auth = require("./utils/auth");
 
@@ -19,30 +5,33 @@ const validate = require("./utils/validate");
 const { database } = require("./utils/firebase");
 const telegram = require("node-telegram-bot-api");
 const moment = require("moment")().utcOffset("+05:30");
+const { map, set, uniq, last, indexOf } = require("lodash");
 
-const configs = require("./files/configs.json");
-const timetable = require("./files/timetable.json");
-
-const { bot_token, admin_chat_id, chat_id, api_key } = process.env;
+const {
+    API_KEY: api_key,
+    BOT_TOKEN: bot_token,
+    GROUP_CHAT_ID: chat_id,
+    ADMIN_CHAT_ID: admin_chat_id,
+} = process.env;
 const bot = new telegram(bot_token, { polling: false });
 
 exports.handler = async (event, context) => {
-    const path = event.path;
     const httpMethod = event.httpMethod;
+    const path = last(event.path.split("/"));
     const rawUrl = new URL(event.rawUrl).origin;
-    const { value: headers, error } = validate.validateHeaders(event.headers);
+    const baseUrl = rawUrl.includes("localhost")
+        ? "https://cwc-mcq.netlify.app/"
+        : rawUrl;
 
-    const {
-        contributor = {},
-        OK: authentication,
-        error: err_authentication,
-    } = await auth(headers.token, rawUrl);
-    const api_authentication = headers.key === api_key;
+    const { contributor = {}, OK: authentication } = await auth(
+        event.headers.token,
+        rawUrl
+    );
 
-    if (
-        !((authentication || api_authentication) && !error) &&
-        httpMethod === "POST"
-    ) {
+    const api_authentication = event.headers.key === api_key;
+    const mention = `<a href="tg://user?id=${contributor.telegram}">${contributor.name}</a>`;
+
+    if ((!authentication && !api_authentication) || httpMethod !== "POST") {
         return {
             statusCode: 401,
             headers: {
@@ -50,113 +39,13 @@ exports.handler = async (event, context) => {
             },
             body: JSON.stringify({
                 OK: false,
-                error: err_authentication,
+                error: "Unauthorized",
             }),
             isBase64Encoded: false,
         };
     }
 
-    if (path.startsWith("/MCQ/schedule") && httpMethod === "GET") {
-        const { value: query, error } = validate.validateMCQschedule(
-            Object.fromEntries(new URLSearchParams(event.rawQuery))
-        );
-
-        if (error) {
-            return {
-                statusCode: 400,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    error: map(error.details, "message"),
-                    OK: false,
-                }),
-                isBase64Encoded: false,
-            };
-        }
-
-        try {
-            if (!authentication) throw Error("Unauthorized");
-            const collection = database.collection("questions");
-            const results = await collection
-                .where("week", "==", moment.week())
-                .where("year", "==", moment.year())
-                .orderBy("date", "desc")
-                .get();
-
-            const result = find(results.docs, (r) =>
-                matches({
-                    approved: true,
-                    topic: query.topic,
-                    author: contributor.code,
-                })(r.data())
-            );
-
-            if (result && !contributor.admin) {
-                throw Error(
-                    `Question with given topic is already posted by contributor: ${contributor.name}`
-                );
-            }
-
-            const [schedule] = compact(
-                flattenDeep(
-                    Object.keys(timetable).map((day) => {
-                        return Object.keys(timetable[day]).map((slot) => {
-                            const { assignee, topic } = timetable[day][slot];
-
-                            if (
-                                assignee === contributor.code &&
-                                topic === query.topic
-                            ) {
-                                return configs.slots.map((s) => {
-                                    return s.code === slot
-                                        ? moment
-                                              .day(day)
-                                              .hour(s.startHr)
-                                              .minute(0)
-                                              .second(0)
-                                              .unix()
-                                        : 0;
-                                });
-                            }
-
-                            return 0;
-                        });
-                    })
-                )
-            );
-
-            if (!schedule && !contributor.admin) {
-                throw Error(
-                    `Current timetable doesn't allow posting this topic from contributor ${contributor.name}.`
-                );
-            }
-
-            return {
-                statusCode: 200,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    OK: true,
-                    schedule: schedule || moment.second(0).unix(),
-                }),
-                isBase64Encoded: false,
-            };
-        } catch (error) {
-            return {
-                statusCode: 500,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    error: error.message,
-                    OK: false,
-                }),
-                isBase64Encoded: false,
-            };
-        }
-    } else if (path.startsWith("/MCQ/create") && httpMethod === "POST") {
+    if (path === "create") {
         const { value: body, error } = validate.validateMCQCreate(
             Object.fromEntries(new URLSearchParams(event.body))
         );
@@ -198,14 +87,13 @@ exports.handler = async (event, context) => {
 
         try {
             body.author = contributor.code;
-            const collection = database.collection("questions");
-            const question = collection.doc();
+            const question = database.collection("questions").doc();
 
             if (body.code) {
                 const query = new URLSearchParams({
+                    api_key,
                     id: question.id,
                     language: body.language,
-                    key: process.env.api_key,
                 }).toString();
 
                 const code2img = await fetch(`${rawUrl}/code2img?${query}`, {
@@ -223,17 +111,13 @@ exports.handler = async (event, context) => {
 
             const sendMessage = await bot.sendMessage(
                 `-100${admin_chat_id}`,
-                `❔ New question added for review (by <b>${contributor.name}</b>)`,
+                `❔ New question added for review (by ${mention})`,
                 {
                     parse_mode: "HTML",
                     reply_markup: set({}, "inline_keyboard[0]", [
                         {
                             text: "View",
-                            url: `${
-                                rawUrl.includes("localhost")
-                                    ? "https://google.co.in/"
-                                    : rawUrl
-                            }/question/${question.id}`,
+                            url: `${baseUrl}/question/${question.id}`,
                         },
                     ]),
                 }
@@ -265,76 +149,104 @@ exports.handler = async (event, context) => {
                 isBase64Encoded: false,
             };
         }
-    } else if (path.startsWith("/MCQ/list") && httpMethod === "GET") {
-        const { value: query, error } = validate.validateMCQList(
-            Object.fromEntries(new URLSearchParams(event.rawQuery))
+    } else if (path === "edit") {
+        const docId = event.queryStringParameters.id;
+        const { value: body, error } = validate.validateMCQEdit(
+            Object.fromEntries(new URLSearchParams(event.body))
         );
 
-        if (error) {
+        if (error || !docId) {
             return {
                 statusCode: 400,
                 headers: {
                     "content-type": `application/json`,
                 },
-                body: JSON.stringify({ error, OK: false }),
+                body: JSON.stringify({
+                    error: "Insufficient Data",
+                    OK: false,
+                }),
+                isBase64Encoded: false,
+            };
+        }
+
+        const options = [
+            body.option_1_value,
+            body.option_2_value,
+            body.option_3_value,
+            body.option_4_value,
+        ];
+
+        if (uniq(options).length !== options.length) {
+            return {
+                statusCode: 400,
+                headers: {
+                    "content-type": `application/json`,
+                },
+                body: JSON.stringify({
+                    error: "All the options should be unique.",
+                    OK: false,
+                }),
                 isBase64Encoded: false,
             };
         }
 
         try {
-            var questions,
-                questionsRef,
-                filter = {},
-                body = { OK: true, response: [], nextPage: false };
-            const { week, year, lang, topic, author, cursor } = query;
-
-            questionsRef = database
+            const question = await database
                 .collection("questions")
-                .orderBy("date", "desc");
+                .doc(docId)
+                .get();
 
-            if (week && year) {
-                questionsRef = questionsRef
-                    .where("week", "==", moment.week())
-                    .where("year", "==", moment.year());
+            if (!question.exists) {
+                throw Error("Question not found");
             }
 
-            if (topic) filter.topic = topic;
-            if (lang) filter.language = lang;
-            if (author) filter.author = author;
-            if (!authentication) filter.approved = true;
+            const { poll_id, code, approved, author, admin_message_id } =
+                question.data();
 
-            if (!cursor) questions = await questionsRef.get();
-            else questions = await questionsRef.startAfter(cursor).get();
+            if (
+                poll_id ||
+                ((author !== contributor.code || approved) &&
+                    !contributor.admin)
+            )
+                throw Error("Question cannot be altered!");
 
-            const response = compact(
-                map(questions.docs, (question) => {
-                    const docId = question.id;
-                    const docData = authentication
-                        ? question.data()
-                        : omit(question.data(), [
-                              "explaination",
-                              "correct_option",
-                          ]);
+            if (body.code && body.code !== code) {
+                const query = new URLSearchParams({
+                    api_key,
+                    edit: true,
+                    id: question.id,
+                    language: body.language,
+                }).toString();
 
-                    if (matches(filter)(docData)) return { docId, ...docData };
-                })
+                const code2img = await fetch(`${rawUrl}/code2img?${query}`, {
+                    method: "POST",
+                    body: body.code,
+                });
+
+                const response = await code2img.json();
+
+                if (response.OK) {
+                    body.screenshot = response.screenshot;
+                } else
+                    throw Error("Error fetching screenshot, Try again later.");
+            }
+
+            await question.update(body);
+            await bot.sendMessage(
+                `-100${admin_chat_id}`,
+                `${mention} made an edit to the question.`,
+                {
+                    parse_mode: "HTML",
+                    reply_to_message_id: admin_message_id,
+                }
             );
 
-            if (response.length) {
-                body.response = week && year ? response : take(response, 10);
-                body.count = body.response.length;
-                if (response.length > body.response.length) {
-                    body.nextPage = true;
-                    body.nextCursor = last(body.response).date;
-                }
-            }
-
             return {
                 statusCode: 200,
-                body: JSON.stringify(body),
                 headers: {
                     "content-type": `application/json`,
                 },
+                body: JSON.stringify({ OK: true, docId: question.id, ...body }),
                 isBase64Encoded: false,
             };
         } catch (error) {
@@ -350,60 +262,7 @@ exports.handler = async (event, context) => {
                 isBase64Encoded: false,
             };
         }
-    } else if (path.startsWith("/MCQ/question") && httpMethod === "GET") {
-        const { value: query, error } = validate.validateMCQQuestion(
-            Object.fromEntries(new URLSearchParams(event.rawQuery))
-        );
-
-        if (error) {
-            return {
-                statusCode: 400,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({ error, OK: false }),
-                isBase64Encoded: false,
-            };
-        }
-
-        try {
-            const docId = query.id;
-            const collection = database.collection("questions");
-            const question = await collection.doc(docId).get();
-            if (!question.exists) throw Error("Question not found");
-            const docData = authentication
-                ? question.data()
-                : omit(question.data(), ["explaination", "correct_option"]);
-
-            if (!docData.approved && !authentication && !api_authentication)
-                throw Error("Question not found");
-
-            return {
-                statusCode: 200,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    OK: true,
-                    response: { docId, ...docData },
-                    query,
-                }),
-                isBase64Encoded: false,
-            };
-        } catch (error) {
-            return {
-                statusCode: 500,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    error: error.message,
-                    OK: false,
-                }),
-                isBase64Encoded: false,
-            };
-        }
-    } else if (path.startsWith("/MCQ/review") && httpMethod === "POST") {
+    } else if (path === "review") {
         const { value: body, error } = validate.validateMCQreview(
             Object.fromEntries(new URLSearchParams(event.body))
         );
@@ -446,7 +305,7 @@ exports.handler = async (event, context) => {
             if (action === "approve") {
                 await bot.sendMessage(
                     `-100${admin_chat_id}`,
-                    `<b>${contributor.name}</b> reviewed this question and marked <i>approved</i>. Hence the question is ready to be posted.`,
+                    `${mention} reviewed this question and marked <i>approved</i>. Hence the question is ready to be posted.`,
                     {
                         parse_mode: "HTML",
                         reply_to_message_id: admin_message_id,
@@ -474,7 +333,7 @@ exports.handler = async (event, context) => {
 
                 await bot.sendMessage(
                     `-100${admin_chat_id}`,
-                    `<b>${contributor.name}</b> reviewed this question and marked <i>declined</i>. Hence the question is deleted from database.`,
+                    `${mention} reviewed this question and marked <i>declined</i>. Hence the question is deleted from database.`,
                     {
                         parse_mode: "HTML",
                         reply_to_message_id: admin_message_id,
@@ -508,7 +367,7 @@ exports.handler = async (event, context) => {
                 isBase64Encoded: false,
             };
         }
-    } else if (path.startsWith("/MCQ/post") && httpMethod === "POST") {
+    } else if (path === "publish") {
         const { value: query, error } = validate.validateMCQpost(
             Object.fromEntries(new URLSearchParams(event.rawQuery))
         );

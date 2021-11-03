@@ -1,10 +1,18 @@
 const telegram = require("node-telegram-bot-api");
 
-exports.handler = async (event, context) => {
-    const rawUrl = new URL(event.rawUrl).origin;
-    const api_key = event.queryStringParameters.api_key;
+const {
+    API_KEY: api_key,
+    BOT_TOKEN: bot_token,
+    ADMIN_CHAT_ID: admin_chat_id,
+} = process.env;
 
-    if (api_key !== process.env.api_key) {
+exports.handler = async (event, context) => {
+    const {
+        queryStringParameters: { key },
+        rawUrl,
+    } = event;
+
+    if (key !== api_key) {
         return {
             statusCode: 403,
             headers: {
@@ -15,9 +23,10 @@ exports.handler = async (event, context) => {
         };
     }
 
-    const { admin_chat_id, bot_token } = process.env;
     const bot = new telegram(bot_token, { polling: false });
-    const text = "Netlify site is updated. View updated site @ " + rawUrl;
+    const text =
+        "Netlify site is updated. View updated site @ " +
+        new URL(rawUrl).origin;
 
     try {
         await bot.sendMessage(`-100${admin_chat_id}`, text);

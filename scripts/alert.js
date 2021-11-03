@@ -54,6 +54,7 @@ function main() {
 
     const topic = topics.find((t) => t.code === _topic);
     const assignee = contributors.find((c) => c.code === _assignee);
+    const mention = `<a href="tg://user?id=${assignee?.telegram}">${assignee?.name}</a>`;
 
     if (!topic || !assignee) {
         return [
@@ -62,7 +63,6 @@ function main() {
         ];
     }
 
-    const mention = `<a href="tg://user?id=${assignee.telegram}">${assignee.name}</a>`;
     return fetch(
         `${baseUrl}/MCQ/list?week=${week}&year=${year}&topic=${_topic}&author=${_assignee}`,
         {

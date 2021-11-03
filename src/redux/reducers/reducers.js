@@ -1,11 +1,11 @@
 import { ActionTypes } from "../constants/actionconstants";
 let default_state = {
+    user: {},
     auth: false,
-    user: null,
-    contributors: null,
-    timetable: null,
     topics: null,
     configs: null,
+    timetable: null,
+    contributors: null,
 };
 
 let reducerFunction = (state = default_state, action) => {

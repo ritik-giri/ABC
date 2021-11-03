@@ -1,6 +1,3 @@
-import React from "react";
-import _ from "lodash";
-import moment from "moment";
 import {
     Container,
     Alert,
@@ -10,11 +7,16 @@ import {
     Badge,
     Spinner,
 } from "react-bootstrap";
-import Navigation from "../../components/Navbar";
+
+import _ from "lodash";
+import React from "react";
+import moment from "moment";
+import { connect } from "react-redux";
 import { instanceOf } from "prop-types";
+import Navigation from "../../components/Navbar";
 import { withCookies, Cookies } from "react-cookie";
 import AlertLoginInfo from "../../components/AlertLoginInfo";
-import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 
 const styles = {
     textarea: {
@@ -30,18 +32,11 @@ const mapStateToProps = (state) => {
     return { state };
 };
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        dispatch: (action) => {
-            dispatch(action);
-        },
-    };
-};
-
 class Question extends React.Component {
     static propTypes = {
         cookies: instanceOf(Cookies).isRequired,
     };
+
     constructor(props) {
         super(props);
         this.state = {
@@ -54,6 +49,16 @@ class Question extends React.Component {
     }
 
     componentDidMount() {
+        if (this.props.location.state) {
+            const variant = this.props.location.state.variant;
+            const alertText = this.props.location.state.alertText;
+            const showAlert = Boolean(this.props.location.state.showAlert);
+
+            this.setState({ showAlert, variant, alertText }, () =>
+                this.props.history.replace()
+            );
+        }
+
         this.postMCQ = this.postMCQ.bind(this);
         this.loadData = this.loadData.bind(this);
         this.reviewMCQ = this.reviewMCQ.bind(this);
@@ -73,44 +78,57 @@ class Question extends React.Component {
     }
 
     loadData() {
-        const id = this.props.match.params.id;
-        const options = _.set(
-            {},
-            "headers.token",
-            this.props.cookies.get("tokenId")
-        );
-        fetch(`/MCQ/question?id=${id}`, options)
+        const {
+            params: { id },
+        } = this.props.match;
+
+        const {
+            cookies: { tokenId: token },
+        } = this.props.cookies;
+
+        const headers = {
+            token,
+        };
+
+        fetch(`/mcq-get/question?id=${id}`, { headers })
             .then((resp) => resp.json())
             .then((data) => {
-                const { OK, response } = data;
-                if (OK) this.setState({ data: response });
-                else {
-                    this.props.history.push({
-                        pathname: "/questions",
-                        state: {
-                            showAlert: true,
-                            variant: "danger",
-                            alertText:
-                                "Error: Requested question was not found. Please try again with correct question ID.",
-                        },
-                    });
-                }
+                const { OK, response, error } = data;
+                if (OK && !error && response) {
+                    this.setState({ data: response });
+                } else throw Error(error);
+            })
+            .catch((e) => {
+                this.props.history.push({
+                    pathname: "/questions",
+                    state: {
+                        showAlert: true,
+                        variant: "danger",
+                        alertText: e.message,
+                    },
+                });
             });
     }
 
     reviewMCQ() {
         this.setState({ confirmed: true });
-        const token = this.props.cookies.get("tokenId");
+
         const {
             action,
             data: { docId: id },
         } = this.state;
 
-        fetch("/MCQ/review", {
+        const {
+            cookies: { tokenId: token },
+        } = this.props.cookies;
+
+        const headers = {
+            token,
+        };
+
+        fetch("/mcq-post/review", {
             method: "POST",
-            headers: {
-                token,
-            },
+            headers,
             body: new URLSearchParams({ action, id }).toString(),
         })
             .then((resp) => resp.json())
@@ -132,16 +150,22 @@ class Question extends React.Component {
 
     postMCQ() {
         this.setState({ confirmed: true });
-        const token = this.props.cookies.get("tokenId");
+
+        const {
+            cookies: { tokenId: token },
+        } = this.props.cookies;
+
+        const headers = {
+            token,
+        };
+
         const {
             data: { docId: id },
         } = this.state;
 
-        fetch(`/MCQ/post?id=${id}`, {
+        fetch(`/mcq-post/publish?id=${id}`, {
             method: "POST",
-            headers: {
-                token,
-            },
+            headers,
         })
             .then((resp) => resp.json())
             .then((data) => {
@@ -168,7 +192,7 @@ class Question extends React.Component {
     }
 
     timestampToDate(timestamp) {
-        return moment(timestamp, 'X').format("lll");
+        return moment(timestamp, "X").format("lll");
     }
 
     render() {
@@ -189,49 +213,41 @@ class Question extends React.Component {
                     {_.isEmpty(this.state.data) ||
                     !this.props.state.contributors ? (
                         <>
-                            <>
-                                <b>Question:</b>
-                                <pre style={styles.pre}>
+                            <b>Question:</b>
+                            <pre style={styles.pre}>
+                                <Placeholder as="p" animation="glow">
+                                    <Placeholder xs={12} />
+                                </Placeholder>
+                            </pre>
+
+                            <b>Options:</b>
+                            {_.times(4, (id) => (
+                                <pre key={id} style={styles.pre}>
                                     <Placeholder as="p" animation="glow">
                                         <Placeholder xs={12} />
                                     </Placeholder>
                                 </pre>
-                            </>
-                            <>
-                                <b>Options:</b>
-                                {_.times(4, (id) => (
-                                    <pre key={id} style={styles.pre}>
-                                        <Placeholder as="p" animation="glow">
-                                            <Placeholder xs={12} />
-                                        </Placeholder>
-                                    </pre>
-                                ))}
-                            </>
+                            ))}
                         </>
                     ) : (
                         <>
-                            <>
-                                <b>Author:</b>
-                                <pre style={styles.pre}>
-                                    {this.getContributorName(
-                                        this.state.data.author
-                                    )}
-                                </pre>
-                            </>
-                            <>
-                                <b>Date {"&"} TIme:</b>
-                                <pre style={styles.pre}>
-                                    {this.timestampToDate(this.state.data.date)}
-                                </pre>
-                            </>
-                            <>
-                                <b>
-                                    Question: (Topic: {this.state.data.topic})
-                                </b>
-                                <pre style={styles.pre}>
-                                    {this.state.data.question}
-                                </pre>
-                            </>
+                            <b>Author:</b>
+                            <pre style={styles.pre}>
+                                {this.getContributorName(
+                                    this.state.data.author
+                                )}
+                            </pre>
+
+                            <b>Date {"&"} TIme:</b>
+                            <pre style={styles.pre}>
+                                {this.timestampToDate(this.state.data.date)}
+                            </pre>
+
+                            <b>Question: (Topic: {this.state.data.topic})</b>
+                            <pre style={styles.pre}>
+                                {this.state.data.question}
+                            </pre>
+
                             {this.state.data.code && (
                                 <>
                                     <b>
@@ -256,27 +272,26 @@ class Question extends React.Component {
                                     </pre>
                                 </>
                             )}
-                            <>
-                                <b>Options:</b>
-                                {[
-                                    "option_1_value",
-                                    "option_2_value",
-                                    "option_3_value",
-                                    "option_4_value",
-                                ].map((option, idx) => (
-                                    <pre key={idx} style={styles.pre}>
-                                        {idx + 1} {">"}{" "}
-                                        {this.state.data[option]}{" "}
-                                        {option.includes(
-                                            this.state.data.correct_option
-                                        ) && (
-                                            <Badge pill bg="success">
-                                                correct
-                                            </Badge>
-                                        )}
-                                    </pre>
-                                ))}
-                            </>
+
+                            <b>Options:</b>
+                            {[
+                                "option_1_value",
+                                "option_2_value",
+                                "option_3_value",
+                                "option_4_value",
+                            ].map((option, idx) => (
+                                <pre key={idx} style={styles.pre}>
+                                    {idx + 1} {">"} {this.state.data[option]}{" "}
+                                    {option.includes(
+                                        this.state.data.correct_option
+                                    ) && (
+                                        <Badge pill bg="success">
+                                            correct
+                                        </Badge>
+                                    )}
+                                </pre>
+                            ))}
+
                             <Modal
                                 show={this.state.showModal}
                                 backdrop="static"
@@ -363,13 +378,21 @@ class Question extends React.Component {
                                             >
                                                 Publish
                                             </Button>{" "}
+                                            {this.state.data.canEdit && (
+                                                <Button
+                                                    variant="primary"
+                                                    as={Link}
+                                                    to={`/question/edit/${this.state.data.docId}`}
+                                                >
+                                                    Edit Question
+                                                </Button>
+                                            )}
                                         </div>
                                     </Alert>
                                 )}
 
                             {!this.state.data.approved &&
-                                this.props.state.auth &&
-                                this.props.state.user.admin && (
+                                this.props.state.auth && (
                                     <Alert show={true} variant="warning">
                                         <p>
                                             The question is not approved yet.
@@ -379,6 +402,9 @@ class Question extends React.Component {
                                         <div>
                                             <Button
                                                 variant="success"
+                                                disabled={
+                                                    !this.props.state.user.admin
+                                                }
                                                 onClick={() =>
                                                     this.setState({
                                                         showModal: true,
@@ -393,6 +419,9 @@ class Question extends React.Component {
                                             </Button>{" "}
                                             <Button
                                                 variant="danger"
+                                                disabled={
+                                                    !this.props.state.user.admin
+                                                }
                                                 onClick={() =>
                                                     this.setState({
                                                         showModal: true,
@@ -404,7 +433,16 @@ class Question extends React.Component {
                                                 }
                                             >
                                                 Decline
-                                            </Button>
+                                            </Button>{" "}
+                                            {this.state.data.canEdit && (
+                                                <Button
+                                                    variant="primary"
+                                                    as={Link}
+                                                    to={`/question/edit/${this.state.data.docId}`}
+                                                >
+                                                    Edit Question
+                                                </Button>
+                                            )}
                                         </div>
                                     </Alert>
                                 )}
@@ -416,7 +454,4 @@ class Question extends React.Component {
     }
 }
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(withCookies(Question));
+export default connect(mapStateToProps, null)(withCookies(Question));

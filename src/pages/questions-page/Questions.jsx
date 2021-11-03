@@ -12,16 +12,15 @@ import {
     Form,
     Badge,
 } from "react-bootstrap";
-import Navigation from "../../components/Navbar";
 
+import { connect } from "react-redux";
+import styled from "styled-components";
+import { Link } from "react-router-dom";
 import { instanceOf } from "prop-types";
 import { withCookies, Cookies } from "react-cookie";
-
-import { Link } from "react-router-dom";
-import styled from "styled-components";
 import AlertLoginInfo from "../../components/AlertLoginInfo";
 import CardPlaceholder from "../../components/CardPlaceholder";
-import { connect } from "react-redux";
+import Navigation from "../../components/Navbar";
 
 const CustomCard = styled(Card)`
     margin-bottom: 1rem;
@@ -40,14 +39,6 @@ const Text = styled(Card.Text)`
 
 const mapStateToProps = (state) => {
     return { state };
-};
-
-const mapDispatchToProps = (dispatch) => {
-    return {
-        dispatch: (action) => {
-            dispatch(action);
-        },
-    };
 };
 
 class Questions extends React.Component {
@@ -80,9 +71,9 @@ class Questions extends React.Component {
         );
 
         if (this.props.location.state) {
+            const variant = this.props.location.state.variant;
+            const alertText = this.props.location.state.alertText;
             const showAlert = Boolean(this.props.location.state.showAlert);
-            const variant = this.props.location.state.variant || "";
-            const alertText = this.props.location.state.alertText || "";
 
             this.setState({ showAlert, variant, alertText }, () =>
                 this.props.history.replace()
@@ -97,19 +88,23 @@ class Questions extends React.Component {
     }
 
     loadData() {
-        const filter = new URLSearchParams(this.state.filter).toString();
-        const url =
-            this.state.hasNextPage && this.state.isNextLoading
-                ? `/MCQ/list?${filter}&cursor=${this.state.nextCursor}`
-                : `/MCQ/list?${filter}`;
+        let url = `/mcq-get/list?${new URLSearchParams(
+            this.state.filter
+        ).toString()}`;
 
-        const options = _.set(
-            {},
-            "headers.token",
-            this.props.cookies.get("tokenId")
-        );
+        if (this.state.hasNextPage && this.state.isNextLoading) {
+            url += `&cursor=${this.state.nextCursor}`;
+        }
 
-        fetch(url, options)
+        const {
+            cookies: { tokenId: token },
+        } = this.props.cookies;
+
+        const headers = {
+            token,
+        };
+
+        fetch(url, { headers })
             .then((resp) => resp.json())
             .then((data) => {
                 const {
@@ -121,7 +116,9 @@ class Questions extends React.Component {
 
                 if (OK) {
                     const data = this.state.data || [];
-                    this.setState({ data: _.uniqBy([...data, ...response], 'docId') });
+                    this.setState({
+                        data: _.uniqBy([...data, ...response], "docId"),
+                    });
                     if (nextPage) {
                         this.setState({
                             nextCursor,
@@ -149,7 +146,7 @@ class Questions extends React.Component {
     }
 
     timestampToDate(timestamp) {
-        return moment(timestamp, 'X').format("lll");
+        return moment(timestamp, "X").format("lll");
     }
 
     updateData(e) {
@@ -199,9 +196,9 @@ class Questions extends React.Component {
                     </ButtonGroup>
 
                     {!this.state.data ||
-                    !this.props.state.contributors ||
                     !this.props.state.topics ||
-                    !this.props.state.configs ? (
+                    !this.props.state.configs ||
+                    !this.props.state.contributors ? (
                         <>
                             {_.times(3, (id) => (
                                 <CardPlaceholder key={id} />
@@ -215,46 +212,48 @@ class Questions extends React.Component {
                         </Alert>
                     ) : (
                         <>
-                            {this.state.data.map(
-                                (d) =>
-                                    (this.props.state.auth || d.approved) && (
-                                        <Link
-                                            to={"/question/" + d.docId}
-                                            key={d.docId}
-                                            style={{
-                                                textDecoration: "none",
-                                                color: "inherit",
-                                            }}
-                                        >
-                                            <CustomCard
+                            {this.state.data.map((d) => (
+                                <Link
+                                    to={"/question/" + d.docId}
+                                    key={d.docId}
+                                    style={{
+                                        textDecoration: "none",
+                                        color: "inherit",
+                                    }}
+                                >
+                                    <CustomCard
+                                        style={{
+                                            borderColor:
+                                                d.hasOwnProperty(
+                                                    "approved"
+                                                )
+                                                    ? d.approved === true
+                                                        ? d.poll_id
+                                                            ? "inherit"
+                                                            : "blue"
+                                                        : "red"
+                                                    : "inherit",
+                                        }}
+                                    >
+                                        <Card.Body>
+                                            <Card.Title
+                                                as={"b"}
                                                 style={{
-                                                    borderColor: !d.approved
-                                                        ? "red"
-                                                        : d.poll_id ? "inherit": "blue",
+                                                    fontSize: "0.75rem",
                                                 }}
                                             >
-                                                <Card.Body>
-                                                    <Card.Title
-                                                        as={"b"}
-                                                        style={{
-                                                            fontSize: "0.75rem",
-                                                        }}
-                                                    >
-                                                        Created by{" "}
-                                                        {this.getContributorName(
-                                                            d.author
-                                                        )}{" "}
-                                                        on{" "}
-                                                        {this.timestampToDate(
-                                                            d.date
-                                                        )}{" "}
-                                                    </Card.Title>
-                                                    <Text>{d.question}</Text>
-                                                </Card.Body>
-                                            </CustomCard>
-                                        </Link>
-                                    )
-                            )}
+                                                Created by{" "}
+                                                {this.getContributorName(
+                                                    d.author
+                                                )}{" "}
+                                                on{" "}
+                                                {this.timestampToDate(d.date)}{" "}
+                                            </Card.Title>
+                                            <Text>{d.question}</Text>
+                                        </Card.Body>
+                                    </CustomCard>
+                                </Link>
+                            ))}
                             {this.state.isNextLoading && <CardPlaceholder />}
                             <div className="d-flex justify-content-center mb-3">
                                 <Button
@@ -397,7 +396,4 @@ class Questions extends React.Component {
     }
 }
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(withCookies(Questions));
+export default connect(mapStateToProps, null)(withCookies(Questions));

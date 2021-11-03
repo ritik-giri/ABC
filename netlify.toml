@@ -26,8 +26,14 @@ status = 200
 force = true
 
 [[redirects]]
-from = "/MCQ/*"
-to = "/.netlify/functions/MCQ"
+from = "/mcq-get/*"
+to = "/.netlify/functions/mcq-get"
+status = 200
+force = true
+
+[[redirects]]
+from = "/mcq-post/*"
+to = "/.netlify/functions/mcq-post"
 status = 200
 force = true
 

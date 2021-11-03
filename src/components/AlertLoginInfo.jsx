@@ -1,15 +1,15 @@
-import React from "react";
 import {
     getAuth,
     GoogleAuthProvider,
     signInWithPopup,
     signOut,
 } from "firebase/auth";
+import React from "react";
 import app from "../firebase";
-import { Alert, Button } from "react-bootstrap";
-import { withCookies } from "react-cookie";
 import { connect } from "react-redux";
+import { Alert, Button } from "react-bootstrap";
 import { setAuth, setUser } from "../redux/actions/actions";
+import { withCookies } from "react-cookie";
 
 const mapStateToProps = (state) => {
     return { state };
@@ -40,11 +40,15 @@ class AlertLoginInfo extends React.Component {
     }
 
     updateLoginStatus() {
-        const tokenId = this.props.cookies.get("tokenId") || "";
+        const {
+            cookies: { tokenId },
+        } = this.props.cookies;
 
         fetch("/login", {
             method: "POST",
-            body: new URLSearchParams({ tokenId }).toString(),
+            body: new URLSearchParams({
+                tokenId,
+            }).toString(),
         })
             .then((resp) => resp.json())
             .then((data) => {

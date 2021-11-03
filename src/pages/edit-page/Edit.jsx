@@ -13,7 +13,9 @@ import {
     Badge,
 } from "react-bootstrap";
 import { connect } from "react-redux";
+import { instanceOf } from "prop-types";
 import Navigation from "../../components/Navbar";
+import { withCookies, Cookies } from "react-cookie";
 import AlertLoginInfo from "../../components/AlertLoginInfo";
 
 const styles = {
@@ -30,7 +32,11 @@ const mapStateToProps = (state) => {
     return { state };
 };
 
-class Post extends React.Component {
+class Edit extends React.Component {
+    static propTypes = {
+        cookies: instanceOf(Cookies).isRequired,
+    };
+
     constructor(props) {
         super(props);
         this.state = {
@@ -45,8 +51,9 @@ class Post extends React.Component {
     componentDidMount() {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.updateData = this.updateData.bind(this);
-        this.findSlot = this.findSlot.bind(this);
+        this.loadData = this.loadData.bind(this);
         this.postMCQ = this.postMCQ.bind(this);
+        this.loadData();
     }
 
     handleSubmit(event) {
@@ -78,26 +85,27 @@ class Post extends React.Component {
         });
 
         const {
-            cookies: { tokenId: token },
+            params: { id },
+        } = this.props.match;
+        const {
+            cookies: { tokenId },
         } = this.props.cookies;
 
         const headers = {
-            token,
+            token: tokenId,
         };
 
-        const body = new URLSearchParams(this.state.data).toString();
-
-        fetch("/mcq-post/create", {
+        fetch(`/mcq-post/edit?id=${id}`, {
             method: "POST",
             headers,
-            body,
+            body: new URLSearchParams(this.state.data).toString(),
         })
             .then((resp) => resp.json())
             .then((data) => {
                 if (data.OK) {
                     this.showAlert(
                         "success",
-                        "Question is submitted successfully and is ready for review. Redirecting to preview in 3secs..."
+                        "Question edit is submitted successfully. Redirecting to preview in 3secs..."
                     );
                     setTimeout(() => {
                         this.props.history.push(`/question/${data.docId}`);
@@ -107,7 +115,7 @@ class Post extends React.Component {
             .catch((err) => {
                 this.showAlert(
                     "danger",
-                    `Question submission failed with Error: ${err.message}`
+                    `Question edit failed with Error: ${err.message}`
                 );
             })
             .finally(() => {
@@ -117,10 +125,10 @@ class Post extends React.Component {
             });
     }
 
-    findSlot() {
-        this.setState({
-            confirmed: true,
-        });
+    loadData() {
+        const {
+            params: { id },
+        } = this.props.match;
 
         const {
             cookies: { tokenId: token },
@@ -130,26 +138,24 @@ class Post extends React.Component {
             token,
         };
 
-        fetch(`/mcq-get/schedule?topic=${this.state.data.topic}`, {
-            headers,
-        })
+        fetch(`/mcq-get/question?id=${id}`, { headers })
             .then((resp) => resp.json())
             .then((data) => {
-                if (data.OK) {
-                    this.setState({
-                        data: { ...this.state.data, schedule: data.schedule },
-                    });
-                } else throw Error(data.error);
+                const { OK, response, error } = data;
+                if (OK && !error && response) {
+                    if (!response.canEdit)
+                        throw Error("Question is unalterable");
+                    this.setState({ data: response });
+                } else throw Error(error);
             })
-            .catch((err) => {
-                this.showAlert(
-                    "danger",
-                    `Question slot search failed with Error: ${err.message}`
-                );
-            })
-            .finally(() => {
-                this.setState({
-                    confirmed: false,
+            .catch((e) => {
+                this.props.history.push({
+                    pathname: "/questions",
+                    state: {
+                        showAlert: true,
+                        variant: "danger",
+                        alertText: e.message,
+                    },
                 });
             });
     }
@@ -165,7 +171,9 @@ class Post extends React.Component {
             <>
                 <Navigation />
                 <AlertLoginInfo />
-                {this.props.state.auth && (
+                {this.props.state.auth &&
+                !isEmpty(this.state.data) &&
+                this.props.state.configs ? (
                     <Container style={{ padding: "20px" }}>
                         {!isEmpty(this.props.state.configs) &&
                             !isEmpty(this.props.state.topics) && (
@@ -190,7 +198,9 @@ class Post extends React.Component {
                                                 style={styles.textarea}
                                                 placeholder="What's your question?"
                                                 onChange={this.updateData}
-                                                defaultValue="OK"
+                                                defaultValue={
+                                                    this.state.data.question
+                                                }
                                                 rows={3}
                                                 required
                                             />
@@ -205,6 +215,9 @@ class Post extends React.Component {
                                                 as="select"
                                                 name="topic"
                                                 onChange={this.updateData}
+                                                defaultValue={
+                                                    this.state.data.topic
+                                                }
                                                 isValid={Boolean(
                                                     this.state.data.topic
                                                 )}
@@ -237,9 +250,13 @@ class Post extends React.Component {
                                                 style={styles.textarea}
                                                 placeholder="Enter formatted Code"
                                                 onChange={this.updateData}
+                                                defaultValue={
+                                                    this.state.data.code
+                                                }
                                                 rows={3}
                                             />
                                         </Form.Group>
+
                                         {this.state.data.code && (
                                             <Form.Group className="mb-3">
                                                 <Form.Label>
@@ -252,19 +269,20 @@ class Post extends React.Component {
                                                     isValid={Boolean(
                                                         this.state.data.language
                                                     )}
+                                                    defaultValue={
+                                                        this.state.data.language
+                                                    }
                                                     required={Boolean(
                                                         this.state.data.code
                                                     )}
                                                 >
                                                     <option label="Select Language"></option>
                                                     {this.props.state.configs.languages.map(
-                                                        (language) => (
+                                                        (language, id) => (
                                                             <option
+                                                                key={id}
                                                                 label={
                                                                     language.name
-                                                                }
-                                                                key={
-                                                                    language.code
                                                                 }
                                                             >
                                                                 {language.code}
@@ -287,83 +305,60 @@ class Post extends React.Component {
                                                 style={styles.textarea}
                                                 placeholder="Explanation"
                                                 onChange={this.updateData}
+                                                defaultValue={
+                                                    this.state.data.explanation
+                                                }
                                                 rows={3}
                                             />
                                         </Form.Group>
+
                                         <Form.Group className="mb-3">
                                             <Form.Label>Options</Form.Label>
-                                            <InputGroup className="mb-3">
-                                                <InputGroup.Radio
-                                                    value="option_1"
-                                                    name="correct_option"
-                                                    onChange={this.updateData}
-                                                    required
-                                                />
-                                                <FormControl
-                                                    name="option_1_value"
-                                                    placeholder="Option 1"
-                                                    onChange={this.updateData}
-                                                    required
-                                                />
-                                                <Form.Control.Feedback type="invalid">
-                                                    Please provide a valid
-                                                    solution.
-                                                </Form.Control.Feedback>
-                                            </InputGroup>
-                                            <InputGroup className="mb-3">
-                                                <InputGroup.Radio
-                                                    value="option_2"
-                                                    name="correct_option"
-                                                    onChange={this.updateData}
-                                                    required
-                                                />
-                                                <FormControl
-                                                    name="option_2_value"
-                                                    placeholder="Option 2"
-                                                    onChange={this.updateData}
-                                                    required
-                                                />
-                                                <Form.Control.Feedback type="invalid">
-                                                    Please provide a valid
-                                                    solution.
-                                                </Form.Control.Feedback>
-                                            </InputGroup>
-                                            <InputGroup className="mb-3">
-                                                <InputGroup.Radio
-                                                    value="option_3"
-                                                    name="correct_option"
-                                                    onChange={this.updateData}
-                                                    required
-                                                />
-                                                <FormControl
-                                                    name="option_3_value"
-                                                    placeholder="Option 3"
-                                                    onChange={this.updateData}
-                                                    required
-                                                />
-                                                <Form.Control.Feedback type="invalid">
-                                                    Please provide a valid
-                                                    solution.
-                                                </Form.Control.Feedback>
-                                            </InputGroup>
-                                            <InputGroup className="mb-3">
-                                                <InputGroup.Radio
-                                                    value="option_4"
-                                                    name="correct_option"
-                                                    onChange={this.updateData}
-                                                    required
-                                                />
-                                                <FormControl
-                                                    name="option_4_value"
-                                                    placeholder="Option 4"
-                                                    onChange={this.updateData}
-                                                    required
-                                                />
-                                                <Form.Control.Feedback type="invalid">
-                                                    Please provide a valid
-                                                    solution.
-                                                </Form.Control.Feedback>
-                                            </InputGroup>
+                                            {[
+                                                "option_1",
+                                                "option_2",
+                                                "option_3",
+                                                "option_4",
+                                            ].map((option, idx) => (
+                                                <InputGroup className="mb-3">
+                                                    <InputGroup.Radio
+                                                        value={option}
+                                                        name="correct_option"
+                                                        onChange={
+                                                            this.updateData
+                                                        }
+                                                        checked={
+                                                            option ===
+                                                            this.state.data
+                                                                .correct_option
+                                                        }
+                                                        required
+                                                    />
+                                                    <FormControl
+                                                        name={`option_${
+                                                            idx + 1
+                                                        }_value`}
+                                                        placeholder={`Option ${
+                                                            idx + 1
+                                                        }`}
+                                                        onChange={
+                                                            this.updateData
+                                                        }
+                                                        defaultValue={
+                                                            this.state.data[
+                                                                `option_${
+                                                                    idx + 1
+                                                                }_value`
+                                                            ]
+                                                        }
+                                                        required
+                                                    />
+                                                    <Form.Control.Feedback type="invalid">
+                                                        Please provide a valid
+                                                        solution.
+                                                    </Form.Control.Feedback>
+                                                </InputGroup>
+                                            ))}
                                         </Form.Group>
                                         <Button
                                             type="submit"
@@ -387,7 +382,7 @@ class Post extends React.Component {
                                         </Modal.Header>
                                         <Modal.Body>
                                             <Alert variant={"danger"}>
-                                                Confirm your submission
+                                                Confirm your submission.
                                             </Alert>
                                             <>
                                                 <b>Question:</b>
@@ -469,11 +464,7 @@ class Post extends React.Component {
                                             )}
                                             <Button
                                                 variant="primary"
-                                                onClick={
-                                                    this.state.data.schedule
-                                                        ? this.postMCQ
-                                                        : this.findSlot
-                                                }
+                                                onClick={this.postMCQ}
                                                 disabled={this.state.confirmed}
                                             >
                                                 {this.state.confirmed ? (
@@ -484,10 +475,8 @@ class Post extends React.Component {
                                                         role="status"
                                                         aria-hidden="true"
                                                     />
-                                                ) : this.state.data.schedule ? (
-                                                    "Confirm"
                                                 ) : (
-                                                    "Find Slot"
+                                                    "Confirm"
                                                 )}
                                             </Button>
                                         </Modal.Footer>
@@ -495,10 +484,15 @@ class Post extends React.Component {
                                 </>
                             )}
                     </Container>
+                ) : (
+                    <Container>
+                        <Spinner animation="border" variant="dark" size="sm" />{" "}
+                        <span>Loading...</span>
+                    </Container>
                 )}
             </>
         );
     }
 }
 
-export default connect(mapStateToProps, null)(Post);
+export default connect(mapStateToProps, null)(withCookies(Edit));

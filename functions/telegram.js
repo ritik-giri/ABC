@@ -1,7 +1,10 @@
 const telegram = require("node-telegram-bot-api");
 
-const { bot_token, admin_chat_id, api_key } = process.env;
-
+const {
+    API_KEY: api_key,
+    BOT_TOKEN: bot_token,
+    ADMIN_CHAT_ID: admin_chat_id,
+} = process.env;
 const bot = new telegram(bot_token, { polling: false });
 
 exports.handler = async (event, context) => {
