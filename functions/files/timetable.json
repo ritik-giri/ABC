@@ -89,17 +89,17 @@
     "4": {
         "S1": {
             "topic": "DSA",
-            "ignore": false,
+            "ignore": true,
             "assignee": "KM"
         },
         "S2": {
             "topic": "CQ",
-            "ignore": false,
+            "ignore": true,
             "assignee": "OM"
         },
         "S3": {
             "topic": "CNS",
-            "ignore": false,
+            "ignore": true,
             "assignee": "PB"
         },
         "S4": {
