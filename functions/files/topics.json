@@ -1,58 +1,13 @@
 [
     {
-        "name": "Psudo Code",
-        "code": "PC",
-        "slots": 2,
+        "name": "Apptitude",
+        "code": "APPT",
+        "slots": 3,
         "coverage": [
             "MP",
-            "PB",
-            "SM",
-            "SA",
-            "OM",
-            "SS"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Coding Questions",
-        "code": "CQ",
-        "slots": 6,
-        "coverage": [
-            "SM",
-            "SA",
-            "PB",
-            "OM",
-            "SS",
-            "SR"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Software Development",
-        "code": "SD",
-        "slots": 4,
-        "ignore": [
-            "OM"
-        ],
-        "coverage": [
-            "SS",
-            "SR",
             "SM",
             "PB",
-            "SA",
-            "KM"
-        ]
-    },
-    {
-        "name": "Data Structure and Algorithms",
-        "code": "DSA",
-        "slots": 5,
-        "coverage": [
-            "SM",
-            "PB",
-            "SA",
-            "OM",
-            "SS"
+            "SA"
         ],
         "ignore": []
     },
@@ -66,7 +21,9 @@
             "PB",
             "SA",
             "SR",
-            "KM"
+            "KM",
+            "OM",
+            "SS"
         ],
         "ignore": []
     },
@@ -77,16 +34,60 @@
         "coverage": [
             "OM",
             "SR",
-            "KM"
+            "KM",
+            "SM",
+            "PB"
         ],
         "ignore": []
     },
     {
-        "name": "Apptitude",
-        "code": "APPT",
-        "slots": 3,
+        "name": "Coding Questions",
+        "code": "CQ",
+        "slots": 6,
         "coverage": [
-            "MP"
+            "KM",
+            "MP",
+            "SM",
+            "PB",
+            "SA",
+            "OM"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Data Structure and Algorithms",
+        "code": "DSA",
+        "slots": 5,
+        "coverage": [
+            "SR",
+            "KM",
+            "MP",
+            "SA",
+            "OM"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Software Development",
+        "code": "SD",
+        "slots": 4,
+        "ignore": [
+            "OM"
+        ],
+        "coverage": [
+            "MP",
+            "SS",
+            "SR",
+            "KM"
+        ]
+    },
+    {
+        "name": "Psudo Code",
+        "code": "PC",
+        "slots": 2,
+        "coverage": [
+            "SR",
+            "SS"
         ],
         "ignore": []
     },
@@ -94,9 +95,7 @@
         "name": "Computer Networking & Security",
         "code": "CNS",
         "slots": 3,
-        "coverage": [
-            "MP"
-        ],
+        "coverage": [],
         "ignore": []
     }
 ]
