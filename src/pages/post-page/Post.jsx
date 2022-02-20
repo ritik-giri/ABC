@@ -13,7 +13,9 @@ import {
     Badge,
 } from "react-bootstrap";
 import { connect } from "react-redux";
+import { instanceOf } from "prop-types";
 import Navigation from "../../components/Navbar";
+import { withCookies, Cookies } from "react-cookie";
 import AlertLoginInfo from "../../components/AlertLoginInfo";
 
 const styles = {
@@ -31,6 +33,10 @@ const mapStateToProps = (state) => {
 };
 
 class Post extends React.Component {
+    static propTypes = {
+        cookies: instanceOf(Cookies).isRequired,
+    };
+
     constructor(props) {
         super(props);
         this.state = {
@@ -190,7 +196,6 @@ class Post extends React.Component {
                                                 style={styles.textarea}
                                                 placeholder="What's your question?"
                                                 onChange={this.updateData}
-                                                defaultValue="OK"
                                                 rows={3}
                                                 required
                                             />
@@ -501,4 +506,4 @@ class Post extends React.Component {
     }
 }
 
-export default connect(mapStateToProps, null)(Post);
+export default connect(mapStateToProps, null)(withCookies(Post));

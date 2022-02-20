@@ -155,6 +155,8 @@ exports.handler = async (event, context) => {
             Object.fromEntries(new URLSearchParams(event.body))
         );
 
+        console.log(error)
+
         if (error || !docId) {
             return {
                 statusCode: 400,
@@ -191,10 +193,8 @@ exports.handler = async (event, context) => {
         }
 
         try {
-            const question = await database
-                .collection("questions")
-                .doc(docId)
-                .get();
+            const questionRef = database.collection("questions").doc(docId);
+            const question = await questionRef.get();
 
             if (!question.exists) {
                 throw Error("Question not found");
@@ -225,13 +225,13 @@ exports.handler = async (event, context) => {
 
                 const response = await code2img.json();
 
-                if (response.OK) {
+                if (response.OK && response.uploaded) {
                     body.screenshot = response.screenshot;
                 } else
                     throw Error("Error fetching screenshot, Try again later.");
             }
 
-            await question.update(body);
+            await questionRef.update(body);
             await bot.sendMessage(
                 `-100${admin_chat_id}`,
                 `${mention} made an edit to the question.`,

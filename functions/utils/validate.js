@@ -2,7 +2,7 @@ const Joi = require("joi");
 const moment = require("moment");
 
 const validateMCQCreate = (body) => {
-    const date = moment().utcOffset("+05:30").unix()
+    const date = moment().utcOffset("+05:30").unix();
     const week = moment().utcOffset("+05:30").week();
     const year = moment().utcOffset("+05:30").year();
 
@@ -36,6 +36,10 @@ const validateMCQCreate = (body) => {
 };
 
 const validateMCQEdit = (body) => {
+    const date = moment().utcOffset("+05:30").unix();
+    const week = moment().utcOffset("+05:30").week();
+    const year = moment().utcOffset("+05:30").year();
+
     const editSchema = Joi.object()
         .keys({
             question: Joi.string().required(),
@@ -51,6 +55,9 @@ const validateMCQEdit = (body) => {
             option_3_value: Joi.string().required(),
             option_4_value: Joi.string().required(),
             correct_option: Joi.string().required(),
+            week: Joi.number().default(week),
+            year: Joi.number().default(year),
+            date: Joi.date().default(date),
         })
         .options({
             stripUnknown: true,

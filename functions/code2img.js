@@ -1,6 +1,7 @@
+const moment = require("moment");
 const fetch = require("node-fetch");
 const { sample } = require("lodash");
-const { storage } = require("./utils/firebase")
+const { storage } = require("./utils/firebase");
 
 const theme = sample([
     "a11y-dark",
@@ -31,67 +32,74 @@ const theme = sample([
 ]);
 
 exports.handler = async (event, context) => {
+    let uploaded = false;
+    const post = event.httpMethod === "POST";
     const name = event.queryStringParameters.id;
-    const edit = event.queryStringParameters.edit;
     const api_key = event.queryStringParameters.api_key;
     const language = event.queryStringParameters.language;
+    const authenticated = api_key === process.env.API_KEY;
+    const api_url = "https://code2img.vercel.app/api/to-image";
 
-    if (api_key !== process.env.API_KEY) {
-        return {
-            statusCode: 403,
-            headers: {
-                "content-type": `application/json`,
-            },
-            body: JSON.stringify({ OK: false, error: "Unauthorized" }),
-            isBase64Encoded: false,
-        };
-    }
-
-    if (!event.body || !language || !name) {
+    if (!name) {
         return {
             statusCode: 500,
             headers: {
                 "content-type": `application/json`,
             },
-            body: JSON.stringify({ OK: false, error: "Insufficient data." }),
+            body: JSON.stringify({ OK: false, error: "Insufficient data" }),
             isBase64Encoded: false,
         };
     }
 
-    const file = storage.file(`${name}.png`);
-    const [exists] = await file.exists();
-    console.log(`file ${name}.png exists: ${exists}`);
+    try {
+        const file = storage.file(`${name}.png`);
+        const [exists] = await file.exists();
 
-    if (!exists || edit) {
-        const response = await fetch(
-            `https://code2img.vercel.app/api/to-image?language=${language}&theme=${theme}&padding=0`,
-            {
-                method: "POST",
-                body: event.body,
-            }
-        );
+        if (language && authenticated && post && event.body) {
+            uploaded = true;
+            const response = await fetch(
+                `${api_url}?language=${language}&theme=${theme}&padding=0`,
+                {
+                    method: "POST",
+                    body: event.body,
+                }
+            );
 
-        const image = await response.buffer();
-        await file.save(image, {
-            public: true,
-            resumable: false,
-            metadata: {
-                contentType: "image/png",
-            },
+            const image = await response.buffer();
+            await file.save(image, {
+                public: true,
+                resumable: false,
+                metadata: {
+                    contentType: "image/png",
+                },
+            });
+        } else if (!exists) throw Error("File not found.");
+
+        const [screenshot] = await file.getSignedUrl({
+            action: "read",
+            expires: moment().add(1, "month").toDate(),
         });
-    }
 
-    return {
-        statusCode: 200,
-        headers: {
-            "content-type": `application/json`,
-        },
-        body: JSON.stringify({
-            theme,
-            language,
-            OK: true,
-            screenshot: file.publicUrl(),
-        }),
-        isBase64Encoded: false,
-    };
+        return {
+            statusCode: 200,
+            headers: {
+                "content-type": `application/json`,
+            },
+            body: JSON.stringify({
+                OK: true,
+                uploaded,
+                screenshot,
+            }),
+            isBase64Encoded: false,
+        };
+    } catch (error) {
+        return {
+            statusCode: 500,
+            headers: {
+                "content-type": `application/json`,
+            },
+            body: JSON.stringify({ OK: false, error: error.message }),
+            isBase64Encoded: false,
+        };
+    }
 };
