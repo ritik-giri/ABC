@@ -1,74 +1,11 @@
 [
     {
-        "name": "Apptitude",
-        "code": "APPT",
-        "slots": 3,
-        "coverage": [
-            "KM",
-            "MP",
-            "SM"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Psudo Code",
-        "code": "PC",
-        "slots": 2,
-        "coverage": [
-            "MP",
-            "PB",
-            "SM",
-            "SA"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Computer Networking & Security",
-        "code": "CNS",
-        "slots": 3,
-        "coverage": [
-            "SM",
-            "PB",
-            "SA"
-        ],
-        "ignore": []
-    },
-    {
         "name": "Data Science",
         "code": "DS",
         "slots": 2,
         "coverage": [
-            "MP",
-            "SM",
-            "PB",
-            "SA"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Coding Questions",
-        "code": "CQ",
-        "slots": 6,
-        "coverage": [
-            "SS",
-            "SR",
-            "PB",
-            "OM",
-            "KM",
-            "MP"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Data Structure and Algorithms",
-        "code": "DSA",
-        "slots": 5,
-        "coverage": [
-            "SR",
-            "MP",
-            "OM",
-            "SS",
-            "KM"
+            "AS",
+            "SM"
         ],
         "ignore": []
     },
@@ -80,16 +17,81 @@
             "OM"
         ],
         "coverage": [
+            "SM",
+            "PB",
+            "AS",
+            "SS"
+        ]
+    },
+    {
+        "name": "Coding Questions",
+        "code": "CQ",
+        "slots": 6,
+        "coverage": [
+            "AS",
+            "SS",
+            "SR",
+            "SM",
+            "PB",
+            "OM"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Apptitude",
+        "code": "APPT",
+        "slots": 3,
+        "coverage": [
+            "MP",
+            "SM",
+            "PB",
+            "SA",
+            "OM",
             "SS",
             "SR"
-        ]
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Computer Networking & Security",
+        "code": "CNS",
+        "slots": 3,
+        "coverage": [
+            "PB",
+            "OM",
+            "SR"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Data Structure and Algorithms",
+        "code": "DSA",
+        "slots": 5,
+        "coverage": [
+            "KM",
+            "MP"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Psudo Code",
+        "code": "PC",
+        "slots": 2,
+        "coverage": [
+            "SR",
+            "SS",
+            "KM",
+            "MP"
+        ],
+        "ignore": []
     },
     {
         "name": "Database Management System",
         "code": "DBMS",
         "slots": 2,
         "coverage": [
-            "OM"
+            "MP",
+            "KM"
         ],
         "ignore": []
     }
