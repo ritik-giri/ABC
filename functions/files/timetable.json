@@ -22,34 +22,34 @@
     },
     "1": {
         "S1": {
-            "topic": "DBMS",
+            "topic": "CQ",
             "ignore": false,
             "assignee": "KM"
         },
         "S2": {
-            "topic": "CNS",
+            "topic": "CQ",
             "ignore": false,
-            "assignee": "OM"
+            "assignee": "RG"
         },
         "S3": {
             "topic": "CQ",
             "ignore": false,
-            "assignee": "SM"
+            "assignee": "MP"
         },
         "S4": {
-            "topic": "SD",
+            "topic": "CQ",
             "ignore": false,
-            "assignee": "SM"
+            "assignee": "NM"
         }
     },
     "2": {
         "S1": {
-            "topic": "DBMS",
+            "topic": "SD",
             "ignore": false,
-            "assignee": "MP"
+            "assignee": "KL"
         },
         "S2": {
-            "topic": "CNS",
+            "topic": "CQ",
             "ignore": false,
             "assignee": "PB"
         },
