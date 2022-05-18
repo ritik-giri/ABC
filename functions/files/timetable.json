@@ -12,7 +12,7 @@
         "S3": {
             "topic": "CQ",
             "ignore": false,
-            "assignee": "PB"
+            "assignee": "KL"
         },
         "S4": {
             "topic": "SD",
