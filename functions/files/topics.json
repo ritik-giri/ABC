@@ -1,34 +1,23 @@
 [
     {
-        "name": "Software Development",
-        "code": "SD",
-        "slots": 4,
-        "ignore": [
-            "OM"
-        ],
+        "name": "Database Management System",
+        "code": "DBMS",
+        "slots": 2,
         "coverage": [
-            "SM",
-            "PB",
-            "AS",
-            "SS",
             "KL",
-            "NM",
-            "RG",
-            "SR"
-        ]
+            "NM"
+        ],
+        "ignore": []
     },
     {
-        "name": "Data Structure and Algorithms",
-        "code": "DSA",
-        "slots": 5,
+        "name": "Psudo Code",
+        "code": "PC",
+        "slots": 2,
         "coverage": [
-            "KM",
+            "OM",
             "MP",
             "KL",
-            "NM",
-            "OM",
-            "RG",
-            "SR"
+            "NM"
         ],
         "ignore": []
     },
@@ -39,28 +28,32 @@
         "coverage": [
             "KL",
             "NM",
+            "OM",
             "RG",
-            "MP",
-            "OM",
-            "SR"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Psudo Code",
-        "code": "PC",
-        "slots": 2,
-        "coverage": [
-            "OM",
+            "SR",
             "MP"
         ],
         "ignore": []
     },
     {
-        "name": "Computer Networking & Security",
-        "code": "CNS",
+        "name": "Apptitude",
+        "code": "APPT",
         "slots": 3,
         "coverage": [
+            "OM",
+            "RG",
+            "SR"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Data Structure and Algorithms",
+        "code": "DSA",
+        "slots": 5,
+        "coverage": [
+            "OM",
+            "RG",
+            "SR",
             "MP"
         ],
         "ignore": []
@@ -69,21 +62,25 @@
         "name": "Data Science",
         "code": "DS",
         "slots": 2,
-        "coverage": [],
+        "coverage": [
+            "MP"
+        ],
         "ignore": []
     },
     {
-        "name": "Database Management System",
-        "code": "DBMS",
-        "slots": 2,
-        "coverage": [],
-        "ignore": []
-    },
-    {
-        "name": "Apptitude",
-        "code": "APPT",
+        "name": "Computer Networking & Security",
+        "code": "CNS",
         "slots": 3,
         "coverage": [],
         "ignore": []
+    },
+    {
+        "name": "Software Development",
+        "code": "SD",
+        "slots": 4,
+        "ignore": [
+            "OM"
+        ],
+        "coverage": []
     }
 ]
