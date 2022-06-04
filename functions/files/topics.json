@@ -1,23 +1,26 @@
 [
     {
-        "name": "Database Management System",
-        "code": "DBMS",
-        "slots": 2,
+        "name": "Apptitude",
+        "code": "APPT",
+        "slots": 3,
         "coverage": [
+            "OM",
+            "RG",
+            "SR",
             "KL",
-            "NM"
+            "NM",
+            "MP"
         ],
         "ignore": []
     },
     {
-        "name": "Psudo Code",
-        "code": "PC",
-        "slots": 2,
+        "name": "Computer Networking & Security",
+        "code": "CNS",
+        "slots": 3,
         "coverage": [
-            "OM",
-            "MP",
             "KL",
-            "NM"
+            "NM",
+            "OM"
         ],
         "ignore": []
     },
@@ -36,11 +39,14 @@
         "ignore": []
     },
     {
-        "name": "Apptitude",
-        "code": "APPT",
-        "slots": 3,
+        "name": "Psudo Code",
+        "code": "PC",
+        "slots": 2,
         "coverage": [
             "OM",
+            "MP",
+            "KL",
+            "NM",
             "RG",
             "SR"
         ],
@@ -59,18 +65,9 @@
         "ignore": []
     },
     {
-        "name": "Data Science",
-        "code": "DS",
+        "name": "Database Management System",
+        "code": "DBMS",
         "slots": 2,
-        "coverage": [
-            "MP"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Computer Networking & Security",
-        "code": "CNS",
-        "slots": 3,
         "coverage": [],
         "ignore": []
     },
@@ -82,5 +79,12 @@
             "OM"
         ],
         "coverage": []
+    },
+    {
+        "name": "Data Science",
+        "code": "DS",
+        "slots": 2,
+        "coverage": [],
+        "ignore": []
     }
 ]
