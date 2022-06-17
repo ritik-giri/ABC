@@ -1,12 +1,13 @@
 [
     {
-        "name": "Apptitude",
-        "code": "APPT",
-        "slots": 3,
+        "name": "Database Management System",
+        "code": "DBMS",
+        "slots": 2,
         "coverage": [
             "KL",
             "NM",
-            "OM"
+            "OM",
+            "RG"
         ],
         "ignore": []
     },
@@ -16,7 +17,23 @@
         "slots": 2,
         "coverage": [
             "KL",
-            "NM"
+            "NM",
+            "OM",
+            "RG"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Apptitude",
+        "code": "APPT",
+        "slots": 3,
+        "coverage": [
+            "KL",
+            "NM",
+            "OM",
+            "RG",
+            "SR",
+            "MP"
         ],
         "ignore": []
     },
@@ -27,42 +44,7 @@
         "coverage": [
             "KL",
             "NM",
-            "OM",
-            "RG",
-            "SR",
-            "MP"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Database Management System",
-        "code": "DBMS",
-        "slots": 2,
-        "coverage": [
-            "KL",
-            "NM"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Psudo Code",
-        "code": "PC",
-        "slots": 2,
-        "coverage": [
-            "OM",
-            "RG"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Data Structure and Algorithms",
-        "code": "DSA",
-        "slots": 5,
-        "coverage": [
-            "OM",
-            "RG",
-            "SR",
-            "MP"
+            "OM"
         ],
         "ignore": []
     },
@@ -74,6 +56,8 @@
             "OM"
         ],
         "coverage": [
+            "KL",
+            "NM",
             "SR",
             "MP"
         ]
@@ -82,6 +66,25 @@
         "name": "Coding Questions",
         "code": "CQ",
         "slots": 6,
+        "coverage": [
+            "KL",
+            "NM",
+            "SR",
+            "MP"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Psudo Code",
+        "code": "PC",
+        "slots": 2,
+        "coverage": [],
+        "ignore": []
+    },
+    {
+        "name": "Data Structure and Algorithms",
+        "code": "DSA",
+        "slots": 5,
         "coverage": [],
         "ignore": []
     }
