@@ -300,7 +300,7 @@ exports.handler = async (event, context) => {
 
             if (!questionDoc.exists) throw Error("Question does not exist");
             const { approved, admin_message_id } = questionDoc.data();
-            if (approved) throw Error("Question is already approved.");
+            if (approved && !contributor.admin) throw Error("Question is already approved.");
 
             if (action === "approve") {
                 await bot.sendMessage(
@@ -333,7 +333,7 @@ exports.handler = async (event, context) => {
 
                 await bot.sendMessage(
                     `-100${admin_chat_id}`,
-                    `${mention} reviewed this question and marked <i>declined</i>. Hence the question is deleted from database.`,
+                    `${mention} reviewed this question and marked <i>declined/deleted</i>. Hence the question is deleted from database.`,
                     {
                         parse_mode: "HTML",
                         reply_to_message_id: admin_message_id,

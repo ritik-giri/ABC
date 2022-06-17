@@ -108,7 +108,7 @@ class Edit extends React.Component {
                         "Question edit is submitted successfully. Redirecting to preview in 3secs..."
                     );
                     setTimeout(() => {
-                        // this.props.history.push(`/question/${data.docId}`);
+                        this.props.history.push(`/question/${data.docId}`);
                     }, 3000);
                 } else throw Error(data.error);
             })
@@ -484,6 +484,7 @@ class Edit extends React.Component {
                                 </>
                             )}
                     </Container>
+                    
                 ) : (
                     <Container>
                         <Spinner animation="border" variant="dark" size="sm" />{" "}

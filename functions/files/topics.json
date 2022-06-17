@@ -21,7 +21,7 @@
             "OM",
             "RG"
         ],
-        "ignore": []
+        "ignore": ["NM"]
     },
     {
         "name": "Apptitude",

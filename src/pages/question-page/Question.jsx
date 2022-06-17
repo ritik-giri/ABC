@@ -380,6 +380,23 @@ class Question extends React.Component {
                                             </Button>{" "}
                                             {this.state.data.canEdit && (
                                                 <Button
+                                                    variant="danger"
+                                                    as={Link}
+                                                    onClick={() =>
+                                                        this.setState({
+                                                            showModal: true,
+                                                            modalText:
+                                                                "Once DECLINED, it will be deleted and cannot be recovered.",
+                                                            action: "decline",
+                                                            method: "review",
+                                                        })
+                                                    }
+                                                >
+                                                    Delete
+                                                </Button>
+                                            )}{" "}
+                                            {this.state.data.canEdit && (
+                                                <Button
                                                     variant="primary"
                                                     as={Link}
                                                     to={`/question/edit/${this.state.data.docId}`}
@@ -426,7 +443,7 @@ class Question extends React.Component {
                                                     this.setState({
                                                         showModal: true,
                                                         modalText:
-                                                            "Once DECLINED, you will be deleted and cannot be recovered.",
+                                                            "Once DECLINED, it will be deleted and cannot be recovered.",
                                                         action: "decline",
                                                         method: "review",
                                                     })

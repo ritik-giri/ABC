@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
+import Footer from "./components/Footer";
+import Navigation from "./components/Navbar";
 import Edit from "./pages/edit-page/Edit";
 import Home from "./pages/home-page/Home";
 import Post from "./pages/post-page/Post";
@@ -44,6 +46,7 @@ function App() {
                     <Route exact path="/question/edit/:id" component={Edit} />
                 </Switch>
             </BrowserRouter>
+            <Footer />
         </div>
     );
 }
