@@ -1,8 +1,35 @@
 [
     {
-        "name": "Data Science",
-        "code": "DS",
-        "slots": 2,
+        "name": "Computer Networking & Security",
+        "code": "CNS",
+        "slots": 3,
+        "coverage": [
+            "RG",
+            "OM",
+            "KL",
+            "NM",
+            "SR"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Software Development",
+        "code": "SD",
+        "slots": 4,
+        "ignore": [
+            "OM"
+        ],
+        "coverage": [
+            "KL",
+            "NM",
+            "RG",
+            "SR"
+        ]
+    },
+    {
+        "name": "Coding Questions",
+        "code": "CQ",
+        "slots": 6,
         "coverage": [
             "KL",
             "NM",
@@ -10,6 +37,16 @@
             "RG",
             "SR",
             "MP"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Data Science",
+        "code": "DS",
+        "slots": 2,
+        "coverage": [
+            "OM",
+            "RG"
         ],
         "ignore": [
             "NM"
@@ -21,20 +58,8 @@
         "slots": 2,
         "coverage": [
             "KL",
-            "NM"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Database Management System",
-        "code": "DBMS",
-        "slots": 2,
-        "coverage": [
-            "KL",
             "NM",
             "OM",
-            "RG",
-            "SR",
             "MP"
         ],
         "ignore": []
@@ -44,33 +69,7 @@
         "code": "APPT",
         "slots": 3,
         "coverage": [
-            "KL",
-            "NM",
-            "OM"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Coding Questions",
-        "code": "CQ",
-        "slots": 6,
-        "coverage": [
-            "OM",
-            "RG",
-            "KL",
-            "NM",
-            "SR",
             "MP"
-        ],
-        "ignore": []
-    },
-    {
-        "name": "Computer Networking & Security",
-        "code": "CNS",
-        "slots": 3,
-        "coverage": [
-            "RG",
-            "OM"
         ],
         "ignore": []
     },
@@ -78,18 +77,14 @@
         "name": "Data Structure and Algorithms",
         "code": "DSA",
         "slots": 5,
-        "coverage": [
-            "RG"
-        ],
+        "coverage": [],
         "ignore": []
     },
     {
-        "name": "Software Development",
-        "code": "SD",
-        "slots": 4,
-        "ignore": [
-            "OM"
-        ],
-        "coverage": []
+        "name": "Database Management System",
+        "code": "DBMS",
+        "slots": 2,
+        "coverage": [],
+        "ignore": []
     }
 ]
