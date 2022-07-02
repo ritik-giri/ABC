@@ -1,30 +1,13 @@
 [
     {
-        "name": "Computer Networking & Security",
-        "code": "CNS",
-        "slots": 3,
+        "name": "Database Management System",
+        "code": "DBMS",
+        "slots": 2,
         "coverage": [
-            "RG",
-            "OM",
             "KL",
-            "NM",
-            "SR"
+            "NM"
         ],
         "ignore": []
-    },
-    {
-        "name": "Software Development",
-        "code": "SD",
-        "slots": 4,
-        "ignore": [
-            "OM"
-        ],
-        "coverage": [
-            "KL",
-            "NM",
-            "RG",
-            "SR"
-        ]
     },
     {
         "name": "Coding Questions",
@@ -41,26 +24,13 @@
         "ignore": []
     },
     {
-        "name": "Data Science",
-        "code": "DS",
-        "slots": 2,
+        "name": "Computer Networking & Security",
+        "code": "CNS",
+        "slots": 3,
         "coverage": [
-            "OM",
-            "RG"
-        ],
-        "ignore": [
-            "NM"
-        ]
-    },
-    {
-        "name": "Psudo Code",
-        "code": "PC",
-        "slots": 2,
-        "coverage": [
+            "MP",
             "KL",
-            "NM",
-            "OM",
-            "MP"
+            "NM"
         ],
         "ignore": []
     },
@@ -69,9 +39,36 @@
         "code": "APPT",
         "slots": 3,
         "coverage": [
-            "MP"
+            "MP",
+            "OM",
+            "RG",
+            "SR"
         ],
         "ignore": []
+    },
+    {
+        "name": "Software Development",
+        "code": "SD",
+        "slots": 4,
+        "ignore": [
+            "OM"
+        ],
+        "coverage": [
+            "MP",
+            "RG",
+            "SR"
+        ]
+    },
+    {
+        "name": "Data Science",
+        "code": "DS",
+        "slots": 2,
+        "coverage": [
+            "OM"
+        ],
+        "ignore": [
+            "NM"
+        ]
     },
     {
         "name": "Data Structure and Algorithms",
@@ -81,8 +78,8 @@
         "ignore": []
     },
     {
-        "name": "Database Management System",
-        "code": "DBMS",
+        "name": "Psudo Code",
+        "code": "PC",
         "slots": 2,
         "coverage": [],
         "ignore": []
