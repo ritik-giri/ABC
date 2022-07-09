@@ -1,15 +1,5 @@
 [
     {
-        "name": "Database Management System",
-        "code": "DBMS",
-        "slots": 2,
-        "coverage": [
-            "KL",
-            "NM"
-        ],
-        "ignore": []
-    },
-    {
         "name": "Coding Questions",
         "code": "CQ",
         "slots": 6,
@@ -30,7 +20,10 @@
         "coverage": [
             "MP",
             "KL",
-            "NM"
+            "NM",
+            "OM",
+            "RG",
+            "SR"
         ],
         "ignore": []
     },
@@ -39,10 +32,31 @@
         "code": "APPT",
         "slots": 3,
         "coverage": [
-            "MP",
-            "OM",
+            "KL",
+            "NM",
+            "OM"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Data Structure and Algorithms",
+        "code": "DSA",
+        "slots": 5,
+        "coverage": [
+            "KL",
+            "NM",
             "RG",
-            "SR"
+            "SR",
+            "MP"
+        ],
+        "ignore": []
+    },
+    {
+        "name": "Psudo Code",
+        "code": "PC",
+        "slots": 2,
+        "coverage": [
+            "MP"
         ],
         "ignore": []
     },
@@ -53,33 +67,20 @@
         "ignore": [
             "OM"
         ],
-        "coverage": [
-            "MP",
-            "RG",
-            "SR"
-        ]
+        "coverage": []
     },
     {
         "name": "Data Science",
         "code": "DS",
         "slots": 2,
-        "coverage": [
-            "OM"
-        ],
+        "coverage": [],
         "ignore": [
             "NM"
         ]
     },
     {
-        "name": "Data Structure and Algorithms",
-        "code": "DSA",
-        "slots": 5,
-        "coverage": [],
-        "ignore": []
-    },
-    {
-        "name": "Psudo Code",
-        "code": "PC",
+        "name": "Database Management System",
+        "code": "DBMS",
         "slots": 2,
         "coverage": [],
         "ignore": []
