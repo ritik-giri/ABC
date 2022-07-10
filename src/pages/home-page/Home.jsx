@@ -77,15 +77,6 @@ class Home extends React.Component {
                             )}
                             .
                         </p>
-                        <hr />
-                        <p className="mb-0">
-                            Moderator of the week is{" "}
-                            <b>
-                                {this.getContributorName(
-                                    this.props.state.configs.moderator
-                                )}
-                            </b>
-                        </p>
                     </Alert>
                     <h2>Timetable</h2>
                     <Table
@@ -115,23 +106,21 @@ class Home extends React.Component {
                                                         day.code
                                                     ][slot.code]["topic"]
                                                 );
-                                                const assignee =
+
+                                                const ignore =
                                                     this.props.state.timetable[
                                                         day.code
-                                                    ][slot.code]["assignee"];
+                                                    ][slot.code]["ignore"];
 
                                                 return (
                                                     <td
                                                         key={
                                                             slot.code + day.code
                                                         }
-                                                        title={this.getContributorName(
-                                                            assignee
-                                                        )}
                                                     >
-                                                        {topic
-                                                            ? `${topic} (${assignee})`
-                                                            : "N/A"}{" "}
+                                                        {topic && !ignore
+                                                            ? topic
+                                                            : "N/A"}
                                                     </td>
                                                 );
                                             }
@@ -153,7 +142,7 @@ class Home extends React.Component {
                     <ListGroup style={{ marginBottom: "2rem" }}>
                         {this.props.state.contributors.map((contributor) => (
                             <ListGroup.Item key={contributor.code}>
-                                {contributor.name} ({contributor.code})
+                                {contributor.name}
                             </ListGroup.Item>
                         ))}
                     </ListGroup>

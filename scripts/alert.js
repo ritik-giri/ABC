@@ -64,7 +64,7 @@ function main() {
     }
 
     return fetch(
-        `${baseUrl}/MCQ/list?week=${week}&year=${year}&topic=${_topic}&author=${_assignee}`,
+        `${baseUrl}/mcq-get/list?week=${week}&year=${year}&topic=${_topic}&author=${_assignee}`,
         {
             headers,
             method: "GET",
@@ -84,7 +84,7 @@ function main() {
                 if (question.approved) {
                     if (!question.poll_id) {
                         return fetch(
-                            `${baseUrl}/MCQ/post?id=${question.docId}`,
+                            `${baseUrl}/mcq-post/post?id=${question.docId}`,
                             {
                                 headers,
                                 method: "POST",
