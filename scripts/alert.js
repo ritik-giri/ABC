@@ -1,12 +1,13 @@
 const root = process.cwd();
 const moment = require("moment");
 const { readFileSync } = require("fs");
-const headers = { key: process.env.api_key };
+const headers = { key: process.env.api_key || "12345" };
 const baseUrl = process.env.baseUrl || "http://localhost:8888";
 const fetch = (...args) =>
     import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
 console.log(`Current baseUrl is ${baseUrl}`);
+console.log("Header is", headers);
 
 function main() {
     const configs = JSON.parse(
@@ -63,13 +64,12 @@ function main() {
         ];
     }
 
-    return fetch(`${baseUrl}/mcq-get/list?week=${week}&year=${year}`, {
+    return fetch(`${baseUrl}/mcq-get/list?week=${week}&year=${year}&topic=${_topic}&author=${_assignee}`, {
         headers,
         method: "GET",
     })
         .then((resp) => resp.json())
         .then((list) => {
-            console.log(list);
             if (!list.OK || !list.count) {
                 return [
                     false,
@@ -82,7 +82,7 @@ function main() {
                 if (question.approved) {
                     if (!question.poll_id) {
                         return fetch(
-                            `${baseUrl}/mcq-post/post?id=${question.docId}`,
+                            `${baseUrl}/mcq-post/publish?id=${question.docId}`,
                             {
                                 headers,
                                 method: "POST",

@@ -17,12 +17,13 @@ const moment = require("moment");
 
 const configs = require("./files/configs.json");
 const timetable = require("./files/timetable.json");
+const { API_KEY: api_key } = process.env;
 
 exports.handler = async (event, context) => {
     const httpMethod = event.httpMethod;
-    const path = last(event.path.split('/'));
+    const path = last(event.path.split("/"));
     const rawUrl = new URL(event.rawUrl).origin;
-
+    const api_authentication = event.headers.key === api_key;
     const { contributor = {}, OK: authentication } = await auth(
         event.headers.token,
         rawUrl
@@ -40,7 +41,7 @@ exports.handler = async (event, context) => {
             }),
             isBase64Encoded: false,
         };
-    }
+    } else console.log({ authentication, api_authentication });
 
     if (path === "schedule") {
         const { value: query, error } = validate.validateMCQschedule(
@@ -97,7 +98,8 @@ exports.handler = async (event, context) => {
                                 return configs.slots.map((s) => {
                                     return (
                                         s.code === slot &&
-                                        moment
+                                        moment()
+                                            .utcOffset("+05:30")
                                             .day(day)
                                             .hour(s.startHr)
                                             .minute(0)
@@ -124,7 +126,9 @@ exports.handler = async (event, context) => {
                 },
                 body: JSON.stringify({
                     OK: true,
-                    schedule: schedule || moment().utcOffset("+05:30").second(0).unix(),
+                    schedule:
+                        schedule ||
+                        moment().utcOffset("+05:30").second(0).unix(),
                 }),
                 isBase64Encoded: false,
             };
@@ -177,7 +181,7 @@ exports.handler = async (event, context) => {
             if (topic) filter.topic = topic;
             if (lang) filter.language = lang;
             if (author) filter.author = author;
-            if (!authentication) filter.approved = true;
+            if (!authentication && !api_authentication) filter.approved = true;
 
             if (!cursor) questions = await questionsRef.get();
             else questions = await questionsRef.startAfter(cursor).get();
@@ -188,13 +192,13 @@ exports.handler = async (event, context) => {
                         docId = question.id;
 
                     if (matches(filter)(question.data())) {
-                        if (!authentication) {
+                        if (!authentication && !api_authentication) {
                             docData = pick(question.data(), [
                                 "docId",
                                 "question",
                                 "author",
                                 "topic",
-                                "date"
+                                "date",
                             ]);
                         } else docData = question.data();
                         return { docId, ...docData };

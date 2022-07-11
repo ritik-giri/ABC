@@ -5,10 +5,10 @@ const moment = require("moment");
 const fetch = (...args) =>
     import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
-const prevWeek = moment().utcOffset("+05:30").subtract(1, "week").week();
-const prevYear = moment().utcOffset("+05:30").subtract(1, "week").year();
+const week = moment().utcOffset("+05:30").week();
+const year = moment().utcOffset("+05:30").year();
 const baseUrl = process.env.baseUrl || "http://localhost:8888";
-const headers = { key: process.env.api_key };
+const headers = { key: process.env.api_key || "12345" };
 
 function getDay(day) {
     switch (parseInt(day)) {
@@ -60,7 +60,7 @@ function getDay(day) {
         return find ? find.name : "";
     };
 
-    fetch(`${baseUrl}/mcq-get/list?week=${prevWeek}&year=${prevYear}`)
+    fetch(`${baseUrl}/mcq-get/list?week=${week}&year=${year}`)
         .then((resp) => resp.json())
         .then((list) => {
             const defaulter = [];
@@ -82,7 +82,7 @@ function getDay(day) {
         })
         .then((defaulter) => {
             if (!defaulter) return;
-            let text = `Here is the list of defaulters for #${prevWeek}week${prevYear}:\n\n${defaulter}`;
+            let text = `Here is the list of defaulters for #${week}week${year}:\n\n${defaulter}`;
             text += `\n\nRepeated violations will be reported to club's core team resulting in unfavourable situations.`;
 
             fetch(`${process.env.baseUrl}/telegram`, {
