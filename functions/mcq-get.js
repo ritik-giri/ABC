@@ -13,7 +13,7 @@ const {
 const auth = require("./utils/auth");
 const validate = require("./utils/validate");
 const { database } = require("./utils/firebase");
-const moment = require("moment")().utcOffset("+05:30");
+const moment = require("moment");
 
 const configs = require("./files/configs.json");
 const timetable = require("./files/timetable.json");
@@ -65,8 +65,8 @@ exports.handler = async (event, context) => {
             if (!authentication) throw Error("Unauthorized");
             const collection = database.collection("questions");
             const results = await collection
-                .where("week", "==", moment.week())
-                .where("year", "==", moment.year())
+                .where("week", "==", moment().utcOffset("+05:30").week())
+                .where("year", "==", moment().utcOffset("+05:30").year())
                 .orderBy("date", "desc")
                 .get();
 
@@ -124,7 +124,7 @@ exports.handler = async (event, context) => {
                 },
                 body: JSON.stringify({
                     OK: true,
-                    schedule: schedule || moment.second(0).unix(),
+                    schedule: schedule || moment().utcOffset("+05:30").second(0).unix(),
                 }),
                 isBase64Encoded: false,
             };
@@ -170,8 +170,8 @@ exports.handler = async (event, context) => {
 
             if (week && year) {
                 questionsRef = questionsRef
-                    .where("week", "==", moment.week())
-                    .where("year", "==", moment.year());
+                    .where("week", "==", week)
+                    .where("year", "==", year);
             }
 
             if (topic) filter.topic = topic;
@@ -194,7 +194,7 @@ exports.handler = async (event, context) => {
                                 "question",
                                 "author",
                                 "topic",
-                                "date",
+                                "date"
                             ]);
                         } else docData = question.data();
                         return { docId, ...docData };

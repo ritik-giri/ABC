@@ -18,7 +18,7 @@ jobs:
                   cache: 'yarn'
             - name: Alert
               run: |
-                  yarn add moment node-fetch && yarn alert
+                  yarn add moment node-fetch && yarn script:alert
               env:
                   api_key: ${{ secrets.API_KEY }}
                   baseUrl: ${{ secrets.BASEURL }}

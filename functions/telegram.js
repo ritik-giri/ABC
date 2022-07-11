@@ -9,11 +9,23 @@ const bot = new telegram(bot_token, { polling: false });
 
 exports.handler = async (event, context) => {
     try {
+        console.log(event.headers.key !== api_key, event.headers.key, api_key)
         if (event.headers.key !== api_key) throw Error("!AUTH");
-        else
-            await bot.sendMessage(`-100${admin_chat_id}`, event.body, {
+        else {
+            console.log(event)
+            const { text, pin } = JSON.parse(event.body);
+            console.log("Text", text);
+
+            const message = await bot.sendMessage(`-100${admin_chat_id}`, text, {
                 parse_mode: "HTML",
             });
+
+            console.log(message);
+
+            if (pin) {
+                await bot.pinChatMessage(`-100${admin_chat_id}`, message.message_id)
+            }
+        }
 
         return {
             statusCode: 200,
@@ -24,6 +36,7 @@ exports.handler = async (event, context) => {
             isBase64Encoded: false,
         };
     } catch (e) {
+        console.log(e.message)
         return {
             statusCode: 500,
             headers: {

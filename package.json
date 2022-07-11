@@ -23,8 +23,9 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "alert": "node scripts/alert.js",
-    "generate": "node scripts/generate.js"
+    "script:alert": "node scripts/alert.js",
+    "script:generate": "node scripts/generate.js",
+    "script:remind": "node scripts/reminder.js"
   },
   "eslintConfig": {
     "extends": [

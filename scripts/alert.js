@@ -1,7 +1,7 @@
 const root = process.cwd();
+const moment = require("moment");
 const { readFileSync } = require("fs");
 const headers = { key: process.env.api_key };
-const moment = require("moment")().utcOffset("+05:30");
 const baseUrl = process.env.baseUrl || "http://localhost:8888";
 const fetch = (...args) =>
     import("node-fetch").then(({ default: fetch }) => fetch(...args));
@@ -25,10 +25,10 @@ function main() {
         readFileSync(`${root}/functions/files/contributors.json`, "utf-8")
     );
 
-    const day = moment.day();
-    const hour = moment.hour();
-    const week = moment.week();
-    const year = moment.year();
+    const day = moment().utcOffset("+05:30").day();
+    const hour = moment().utcOffset("+05:30").hour();
+    const week = moment().utcOffset("+05:30").week();
+    const year = moment().utcOffset("+05:30").year();
     const slot = configs.slots.find((s) => hour >= s.startHr && hour < s.endHr);
 
     if (!slot) {
@@ -63,15 +63,13 @@ function main() {
         ];
     }
 
-    return fetch(
-        `${baseUrl}/mcq-get/list?week=${week}&year=${year}&topic=${_topic}&author=${_assignee}`,
-        {
-            headers,
-            method: "GET",
-        }
-    )
+    return fetch(`${baseUrl}/mcq-get/list?week=${week}&year=${year}`, {
+        headers,
+        method: "GET",
+    })
         .then((resp) => resp.json())
         .then((list) => {
+            console.log(list);
             if (!list.OK || !list.count) {
                 return [
                     false,
@@ -137,7 +135,7 @@ function main() {
     } catch (e) {
         console.log(`Error: ${e.message.replace(/<[^>]+>/g, "")}`);
         fetch(`${baseUrl}/telegram`, {
-            body: String(e.message),
+            body: JSON.stringify({ text: String(e.message) }),
             method: "POST",
             headers,
         });

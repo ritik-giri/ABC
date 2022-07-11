@@ -4,7 +4,7 @@ const auth = require("./utils/auth");
 const validate = require("./utils/validate");
 const { database } = require("./utils/firebase");
 const telegram = require("node-telegram-bot-api");
-const moment = require("moment")().utcOffset("+05:30");
+const moment = require("moment");
 const { map, set, uniq, last, indexOf } = require("lodash");
 
 const {
@@ -434,7 +434,7 @@ exports.handler = async (event, context) => {
                 );
             }
 
-            if (schedule > moment.unix() && !contributor.admin) {
+            if (schedule > moment().utcOffset("+05:30").unix() && !contributor.admin) {
                 throw new Error(
                     "The question has been scheduled for later time, Only admin can post the question before time."
                 );
