@@ -49,5 +49,29 @@
         "email": "pshreejoy15@gmail.com",
         "code": "SD",
         "admin": true
+    },
+    {
+        "name": "Sanjib Kumar Mohanty",
+        "telegram":1393962218,
+        "email": "sanjibmohanty2024@gmail.com",
+        "code": "SK"
+    },
+    {
+        "name": "Prakriti Priya",
+        "telegram": 1786529078,
+        "email": "prakritipriya1423@gmail.com",
+        "code": "PP"
+    },
+    {
+        "name": "Swaty Mohanty",
+        "telegram": 820706716,
+        "email": "swatymohanty1681@gmail.com",
+        "code": "SM"
+    },
+    {
+        "name": "Prince Kumar Singh",
+        "telegram": 5416962270,
+        "email": "princekumar2000.pks@gmail.com",
+        "code": "PK"
     }
 ]
