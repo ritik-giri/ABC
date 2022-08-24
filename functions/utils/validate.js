@@ -102,7 +102,7 @@ const validateMCQreview = (body) => {
 };
 
 const validateMCQschedule = (query) => {
-    const reviewSchema = Joi.object()
+    const scheduleSchema = Joi.object()
         .keys({
             topic: Joi.string().required(),
         })
@@ -110,11 +110,11 @@ const validateMCQschedule = (query) => {
             stripUnknown: true,
         });
 
-    return Joi.compile(reviewSchema).validate(query);
+    return Joi.compile(scheduleSchema).validate(query);
 };
 
-const validateMCQpost = (query) => {
-    const reviewSchema = Joi.object()
+const validateMCQpublish = (query) => {
+    const publishSchema = Joi.object()
         .keys({
             id: Joi.string().required(),
         })
@@ -122,7 +122,7 @@ const validateMCQpost = (query) => {
             stripUnknown: true,
         });
 
-    return Joi.compile(reviewSchema).validate(query);
+    return Joi.compile(publishSchema).validate(query);
 };
 
 module.exports = {
@@ -132,5 +132,5 @@ module.exports = {
     validateMCQQuestion,
     validateMCQreview,
     validateMCQschedule,
-    validateMCQpost,
+    validateMCQpublish,
 };

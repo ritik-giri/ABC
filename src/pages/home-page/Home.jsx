@@ -101,16 +101,17 @@ class Home extends React.Component {
                                         <td>{day.name}</td>
                                         {this.props.state.configs.slots.map(
                                             (slot) => {
-                                                const topic = this.getTopicName(
+                                                const slot_data =
                                                     this.props.state.timetable[
                                                         day.code
-                                                    ][slot.code]["topic"]
+                                                    ][slot.code];
+
+                                                const topic = this.getTopicName(
+                                                    slot_data?.topic
                                                 );
 
                                                 const ignore =
-                                                    this.props.state.timetable[
-                                                        day.code
-                                                    ][slot.code]["ignore"];
+                                                    slot_data?.ignore;
 
                                                 return (
                                                     <td

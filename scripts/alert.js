@@ -1,7 +1,7 @@
 const root = process.cwd();
 const moment = require("moment");
 const { readFileSync } = require("fs");
-const headers = { key: process.env.api_key || "12345" };
+const headers = { token: process.env.api_key || "12345", auth_mode: "api" };
 const baseUrl = process.env.baseUrl || "http://localhost:8888";
 const fetch = (...args) =>
     import("node-fetch").then(({ default: fetch }) => fetch(...args));
@@ -64,10 +64,13 @@ function main() {
         ];
     }
 
-    return fetch(`${baseUrl}/mcq-get/list?week=${week}&year=${year}&topic=${_topic}&author=${_assignee}`, {
-        headers,
-        method: "GET",
-    })
+    return fetch(
+        `${baseUrl}/mcq-get/list?week=${week}&year=${year}&topic=${_topic}&author=${_assignee}`,
+        {
+            headers,
+            method: "GET",
+        }
+    )
         .then((resp) => resp.json())
         .then((list) => {
             if (!list.OK || !list.count) {
@@ -134,8 +137,8 @@ function main() {
         else throw Error(response);
     } catch (e) {
         console.log(`Error: ${e.message.replace(/<[^>]+>/g, "")}`);
-        fetch(`${baseUrl}/telegram`, {
-            body: JSON.stringify({ text: String(e.message) }),
+        fetch(`${baseUrl}/request/telegram`, {
+            body: new URLSearchParams({ text: String(e.message) }).toString(),
             method: "POST",
             headers,
         });

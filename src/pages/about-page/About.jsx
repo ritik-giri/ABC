@@ -2,7 +2,10 @@ import React from "react";
 
 import Navigation from "../../components/Navbar";
 import { connect } from "react-redux";
-import { Container, Placeholder, Table } from "react-bootstrap";
+import { Button, Container, Modal, Placeholder, Table } from "react-bootstrap";
+
+import { instanceOf } from "prop-types";
+import { withCookies, Cookies } from "react-cookie";
 import _ from "lodash";
 
 const mapStateToProps = (state) => {
@@ -20,8 +23,22 @@ const styles = {
 };
 
 class About extends React.Component {
+    static propTypes = {
+        cookies: instanceOf(Cookies).isRequired,
+    };
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            data: {},
+            timetable: false,
+        };
+    }
+
     componentDidMount() {
+        this.getData = this.getData.bind(this);
         !this.props.state.auth && this.props.history.push("/questions");
+        console.log(this.getData());
     }
 
     getDay(day) {
@@ -37,7 +54,7 @@ class About extends React.Component {
             case 4:
                 return "Thursday";
             case 5:
-                return "Friday";  
+                return "Friday";
             case 6:
                 return "Saturday";
             default:
@@ -52,28 +69,50 @@ class About extends React.Component {
         return find ? find.name : "";
     }
 
-    getSchedule() {
-        let schedule = []
-        const timetable = this.props.state.timetable;
-        for (const [day, slots] of Object.entries(timetable)) {
-            for (const [slot, { topic, assignee }] of Object.entries(slots)) {
-                if (assignee === this.props.state.user.code) {
-                    schedule.push({
-                        day,
-                        slot,
-                        topic
-                    });
-                }
-            }
-        }
-        return schedule;
+    getContributorName(codeName) {
+        var find = this.props.state.contributors.find(
+            (contributor) => contributor.code === codeName
+        );
+        return find ? find.name : "";
+    }
+
+    getData() {
+        const {
+            cookies: { tokenId: token },
+        } = this.props.cookies;
+
+        const headers = {
+            token,
+        };
+
+        console.log(headers);
+
+        fetch(`/mcq-get/about`, { headers })
+            .then((resp) => resp.json())
+            .then((data) => {
+                const { OK, error, ...response } = data;
+                if (OK && !error) {
+                    this.setState({ data: response });
+                } else throw Error(error);
+            })
+            .catch((e) => {
+                this.props.history.push({
+                    pathname: "/questions",
+                    state: {
+                        showAlert: true,
+                        variant: "danger",
+                        alertText: e.message,
+                    },
+                });
+            });
     }
 
     render() {
         return (
             <>
                 <Navigation />
-                {_.isEmpty(this.props.state.timetable) ||
+                {_.isEmpty(this.state.data) ||
+                _.isEmpty(this.props.state.timetable) ||
                 _.isEmpty(this.props.state.contributors) ||
                 _.isEmpty(this.props.state.configs) ||
                 _.isEmpty(this.props.state.topics) ? (
@@ -120,8 +159,7 @@ class About extends React.Component {
                                     whiteSpace: "no-wrap",
                                 }}
                             >
-                                {this.props.state.user.name} (
-                                {this.props.state.user.code})
+                                {this.state.data.name} ({this.state.data.code})
                             </pre>
                         </>
                         <>
@@ -132,7 +170,22 @@ class About extends React.Component {
                                     whiteSpace: "no-wrap",
                                 }}
                             >
-                                {this.props.state.user.email}
+                                {this.state.data.email}
+                            </pre>
+                        </>
+                        <>
+                            <b>Telegram:</b>
+                            <pre
+                                style={{
+                                    ...styles.pre,
+                                    whiteSpace: "no-wrap",
+                                }}
+                            >
+                                <a
+                                    href={`tg://user?id=${this.state.data.telegram}`}
+                                >
+                                    Open with Telegram
+                                </a>
                             </pre>
                         </>
                         <>
@@ -144,18 +197,161 @@ class About extends React.Component {
                                         <th>Day</th>
                                         <th>Slot</th>
                                         <th>Topic</th>
+                                        <th>Posted</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {this.getSchedule().map((schedule, index) => (
-                                        <tr key={index}>
-                                            <td>{index + 1}</td>
-                                            <td>{this.getDay(schedule.day)}</td>
-                                            <td>{schedule.slot}</td>
-                                            <td>{this.getTopicName(schedule.topic)}</td>
-                                        </tr>
-                                    ))}
+                                    {this.state.data.assignment.map(
+                                        (schedule, index) => (
+                                            <tr key={index}>
+                                                <td>{index + 1}</td>
+                                                <td>
+                                                    {this.getDay(schedule.day)}
+                                                </td>
+                                                <td>{schedule.slot}</td>
+                                                <td>
+                                                    {this.getTopicName(
+                                                        schedule.topic
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    {schedule.fulfilled
+                                                        ? "Yes"
+                                                        : "No"}
+                                                </td>
+                                            </tr>
+                                        )
+                                    )}
                                 </tbody>
+                                <Button
+                                    variant="primary"
+                                    style={{ marginTop: "1rem" }}
+                                    onClick={() =>
+                                        this.setState({ timetable: true })
+                                    }
+                                >
+                                    Show Timetable
+                                </Button>
+                                <Modal
+                                    show={this.state.timetable}
+                                    size="lg"
+                                    fullscreen={"lg-down"}
+                                    onHide={() =>
+                                        this.setState({ timetable: false })
+                                    }
+                                >
+                                    <Modal.Header closeButton>
+                                        <Modal.Title>Timetable</Modal.Title>
+                                    </Modal.Header>
+                                    <Modal.Body>
+                                        <Table
+                                            responsive
+                                            striped
+                                            bordered
+                                            hover
+                                            style={{ marginBottom: "2rem" }}
+                                        >
+                                            <thead>
+                                                <tr>
+                                                    <th>DAY</th>
+                                                    {this.props.state.configs.slots.map(
+                                                        (slot) => (
+                                                            <th>{slot.name}</th>
+                                                        )
+                                                    )}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {this.props.state.configs.days.map(
+                                                    (day) => {
+                                                        return (
+                                                            <tr key={day.code}>
+                                                                <td>
+                                                                    {day.name}
+                                                                </td>
+                                                                {this.props.state.configs.slots.map(
+                                                                    (slot) => {
+                                                                        const data =
+                                                                            this
+                                                                                .state
+                                                                                .data
+                                                                                .schedule[
+                                                                                day
+                                                                                    .code
+                                                                            ][
+                                                                                slot
+                                                                                    .code
+                                                                            ];
+
+                                                                        const topic =
+                                                                            this.getTopicName(
+                                                                                data?.topic
+                                                                            );
+
+                                                                        const assignee =
+                                                                            this.getContributorName(
+                                                                                data?.assignee
+                                                                            );
+
+                                                                        const fulfilled =
+                                                                            data?.fulfilled;
+
+                                                                        const ignore =
+                                                                            data?.ignore;
+
+                                                                        const color =
+                                                                            fulfilled ===
+                                                                            true
+                                                                                ? "green"
+                                                                                : fulfilled ===
+                                                                                  false
+                                                                                ? "red"
+                                                                                : "black";
+
+                                                                        return (
+                                                                            <td
+                                                                                key={
+                                                                                    slot.code +
+                                                                                    day.code
+                                                                                }
+                                                                            >
+                                                                                {topic &&
+                                                                                !ignore ? (
+                                                                                    <>
+                                                                                        <span
+                                                                                            style={{
+                                                                                                color,
+                                                                                            }}
+                                                                                        >
+                                                                                            {
+                                                                                                topic
+                                                                                            }
+                                                                                        </span>
+                                                                                        <br />
+                                                                                        <small>
+                                                                                            (
+                                                                                            {
+                                                                                                assignee
+                                                                                            }
+
+                                                                                            )
+                                                                                        </small>
+                                                                                    </>
+                                                                                ) : (
+                                                                                    "N/A"
+                                                                                )}
+                                                                            </td>
+                                                                        );
+                                                                    }
+                                                                )}
+                                                            </tr>
+                                                        );
+                                                    }
+                                                )}
+                                            </tbody>
+                                        </Table>
+                                    </Modal.Body>
+                                </Modal>
                             </Table>
                         </>
                     </Container>
@@ -165,4 +361,4 @@ class About extends React.Component {
     }
 }
 
-export default connect(mapStateToProps, null)(About);
+export default connect(mapStateToProps, null)(withCookies(About));

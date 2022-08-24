@@ -1,6 +1,6 @@
 {
-    "start": 1634409000,
-    "end": 1635013799,
+    "start": 1661020200,
+    "end": 1661624999,
     "days": [
         {
             "code": "0",
@@ -36,23 +36,29 @@
             "code": "S1",
             "name": "SLOT 1",
             "startHr": 7,
-            "endHr": 11
+            "endHr": 10
         },
         {
             "code": "S2",
             "name": "SLOT 2",
-            "startHr": 11,
-            "endHr": 15
+            "startHr": 10,
+            "endHr": 13
         },
         {
             "code": "S3",
             "name": "SLOT 3",
-            "startHr": 15,
-            "endHr": 19
+            "startHr": 13,
+            "endHr": 16
         },
         {
             "code": "S4",
             "name": "SLOT 4",
+            "startHr": 16,
+            "endHr": 19
+        },
+        {
+            "code": "S5",
+            "name": "SLOT 5",
             "startHr": 19,
             "endHr": 22
         }
@@ -105,6 +111,6 @@
     ],
     "ignore": [
         "SD",
-        "AS"
+        "KR"
     ]
 }

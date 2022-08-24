@@ -1,412 +1,268 @@
-const fetch = require("node-fetch");
-const auth = require("./utils/auth");
-
-const validate = require("./utils/validate");
-const { database } = require("./utils/firebase");
-const telegram = require("node-telegram-bot-api");
 const moment = require("moment");
-const { map, set, uniq, last, indexOf } = require("lodash");
+const fetch = require("node-fetch");
+const { uniq, indexOf, sample } = require("lodash");
+const validate = require("./utils/validate");
+const { database, storage, field } = require("./utils/firebase");
+const { error, response } = require("./utils/string");
+const telegram = require("./utils/telegram");
+const base = require("./utils/base");
 
-const {
-    API_KEY: api_key,
-    BOT_TOKEN: bot_token,
-    GROUP_CHAT_ID: chat_id,
-    ADMIN_CHAT_ID: admin_chat_id,
-} = process.env;
-const bot = new telegram(bot_token, { polling: false });
+exports.handler = async (event, _context) => {
+    const main = new mcq_post(event);
+    return await main.execute();
+};
 
-exports.handler = async (event, context) => {
-    const httpMethod = event.httpMethod;
-    const path = last(event.path.split("/"));
-    const rawUrl = new URL(event.rawUrl).origin;
-    const baseUrl = rawUrl.includes("localhost")
-        ? "https://cwc-mcq.netlify.app/"
-        : rawUrl;
-
-    const { contributor = {}, OK: authentication } = await auth(
-        event.headers.token,
-        rawUrl
-    );
-
-    const api_authentication = event.headers.key === api_key;
-    const mention = `<a href="tg://user?id=${contributor.telegram}">${contributor.name}</a>`;
-
-    if ((!authentication && !api_authentication) || httpMethod !== "POST") {
-        return {
-            statusCode: 401,
-            headers: {
-                "content-type": `application/json`,
-            },
-            body: JSON.stringify({
-                OK: false,
-                error: "Unauthorized",
-            }),
-            isBase64Encoded: false,
-        };
+class mcq_post extends base {
+    #error(message) {
+        throw new Error(message);
     }
 
-    if (path === "create") {
-        const { value: body, error } = validate.validateMCQCreate(
-            Object.fromEntries(new URLSearchParams(event.body))
-        );
+    async execute() {
+        await this.authenticate();
+        this.telegram = new telegram();
 
-        if (error) {
-            return {
-                statusCode: 400,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    error: map(error.details, "message"),
-                    OK: false,
-                }),
-                isBase64Encoded: false,
-            };
+        if (!this.auth) {
+            return this.resp_404();
         }
 
-        const options = [
-            body.option_1_value,
-            body.option_2_value,
-            body.option_3_value,
-            body.option_4_value,
-        ];
-
-        if (uniq(options).length !== options.length) {
-            return {
-                statusCode: 400,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    error: "All the options should be unique.",
-                    OK: false,
-                }),
-                isBase64Encoded: false,
-            };
+        switch (this.path) {
+            case "/mcq-post/create":
+                return this.#create();
+            case "/mcq-post/edit":
+                return this.#edit();
+            case "/mcq-post/review":
+                return this.#review();
+            case "/mcq-post/publish":
+                return this.#publish();
+            default:
+                return this.resp_404();
         }
+    }
+
+    async #rm_code2img(id) {
+        try {
+            const file = storage.file(`${id}.png`);
+            const [exists] = await file.exists();
+            exists && (await file.delete());
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    async #code2img(id, language, code) {
+        const url = new URL("https://code2img.vercel.app/api/to-image");
+
+        const theme = sample([
+            "a11y-dark",
+            "atom-dark",
+            "base16-ateliersulphurpool.light",
+            "cb",
+            "darcula",
+            "default",
+            "dracula",
+            "duotone-dark",
+            "duotone-earth",
+            "duotone-forest",
+            "duotone-light",
+            "duotone-sea",
+            "duotone-space",
+            "ghcolors",
+            "hopscotch",
+            "material-dark",
+            "material-light",
+            "material-oceanic",
+            "nord",
+            "pojoaque",
+            "shades-of-purple",
+            "synthwave84",
+            "vs",
+            "vsc-dark-plus",
+            "xonokai",
+        ]);
 
         try {
-            body.author = contributor.code;
-            const question = database.collection("questions").doc();
+            (!language || !code) && this.error("Insufficient data");
+            const file = storage.file(`${id}.png`);
+            const [exists] = await file.exists();
+            exists && (await file.delete());
 
-            if (body.code) {
-                const query = new URLSearchParams({
-                    api_key,
-                    id: question.id,
-                    language: body.language,
-                }).toString();
+            url.searchParams.set("language", language);
+            url.searchParams.set("theme", theme);
+            url.searchParams.set("padding", 0);
 
-                const code2img = await fetch(`${rawUrl}/code2img?${query}`, {
-                    method: "POST",
-                    body: body.code,
-                });
-
-                const response = await code2img.json();
-
-                if (response.OK) {
-                    body.screenshot = response.screenshot;
-                } else
-                    throw Error("Error fetching screenshot, Try again later.");
-            }
-
-            const sendMessage = await bot.sendMessage(
-                `-100${admin_chat_id}`,
-                `❔ New question added for review (by ${mention})`,
-                {
-                    parse_mode: "HTML",
-                    reply_markup: set({}, "inline_keyboard[0]", [
-                        {
-                            text: "View",
-                            url: `${baseUrl}/question/${question.id}`,
-                        },
-                    ]),
-                }
-            );
-
-            await question.set({
-                ...body,
-                admin_message_id: sendMessage.message_id,
+            const response = await fetch(url, {
+                method: "POST",
+                body: code,
             });
 
-            return {
-                statusCode: 200,
-                headers: {
-                    "content-type": `application/json`,
+            const image = await response.buffer();
+
+            await file.save(image, {
+                public: true,
+                resumable: false,
+                metadata: {
+                    contentType: "image/png",
                 },
-                body: JSON.stringify({ OK: true, docId: question.id, ...body }),
-                isBase64Encoded: false,
-            };
+            });
+
+            return true;
         } catch (error) {
-            return {
-                statusCode: 500,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    error: error.message,
-                    OK: false,
-                }),
-                isBase64Encoded: false,
-            };
+            return false;
         }
-    } else if (path === "edit") {
-        const docId = event.queryStringParameters.id;
-        const { value: body, error } = validate.validateMCQEdit(
-            Object.fromEntries(new URLSearchParams(event.body))
+    }
+
+    async #create() {
+        const { value: data, error: err } = validate.validateMCQCreate(
+            this.body
         );
 
-        console.log(error)
+        try {
+            err && this.#error(err);
+            const options = [
+                data.option_1_value,
+                data.option_2_value,
+                data.option_3_value,
+                data.option_4_value,
+            ];
 
-        if (error || !docId) {
-            return {
-                statusCode: 400,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    error: "Insufficient Data",
-                    OK: false,
-                }),
-                isBase64Encoded: false,
-            };
+            uniq(options).length !== options.length &&
+                this.#error(error.OPTION_DUPLICATE);
+
+            Object.assign(data, { author: this.user.code });
+            const question = database.collection("questions").doc();
+
+            if (data.code) {
+                const code2img = await this.#code2img(
+                    question.id,
+                    data.language,
+                    data.code
+                );
+
+                !code2img && this.#error(error.SCREENSHOT_FETCH);
+            }
+
+            const admin_message_id = await this.telegram.create_quiz(
+                this.get_mention(),
+                `${this.url}/question/${question.id}`
+            );
+
+            Object.assign(data, { admin_message_id });
+            await question.set(data);
+
+            return this.resp_200({ OK: true, docId: question.id, ...data });
+        } catch (error) {
+            return this.resp_500({ error: error.message });
         }
+    }
 
-        const options = [
-            body.option_1_value,
-            body.option_2_value,
-            body.option_3_value,
-            body.option_4_value,
-        ];
-
-        if (uniq(options).length !== options.length) {
-            return {
-                statusCode: 400,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    error: "All the options should be unique.",
-                    OK: false,
-                }),
-                isBase64Encoded: false,
-            };
-        }
+    async #edit() {
+        const docId = this.query.id;
+        const { value: data, error: err } = validate.validateMCQEdit(this.body);
 
         try {
+            const options = [
+                data.option_1_value,
+                data.option_2_value,
+                data.option_3_value,
+                data.option_4_value,
+            ];
+
+            (err || !docId) && this.#error(error.LESS_DATA);
+            uniq(options).length !== options.length &&
+                this.#error(error.OPTION_DUPLICATE);
+
             const questionRef = database.collection("questions").doc(docId);
             const question = await questionRef.get();
 
-            if (!question.exists) {
-                throw Error("Question not found");
-            }
-
+            !question.exists && this.#error(error.QUESTION_NOT_FOUND);
             const { poll_id, code, approved, author, admin_message_id } =
                 question.data();
 
-            if (
-                poll_id ||
-                ((author !== contributor.code || approved) &&
-                    !contributor.admin)
-            )
-                throw Error("Question cannot be altered!");
+            (((author !== this.user.code || approved) && !this.user.admin) ||
+                poll_id) &&
+                this.#error(error.QUESTION_ALTER);
 
-            if (body.code && body.code !== code) {
-                const query = new URLSearchParams({
-                    api_key,
-                    edit: true,
-                    id: question.id,
-                    language: body.language,
-                }).toString();
+            if (data.code && data.code !== code) {
+                const code2img = await this.#code2img(
+                    question.id,
+                    data.language,
+                    data.code
+                );
 
-                const code2img = await fetch(`${rawUrl}/code2img?${query}`, {
-                    method: "POST",
-                    body: body.code,
-                });
-
-                const response = await code2img.json();
-
-                if (response.OK && response.uploaded) {
-                    body.screenshot = response.screenshot;
-                } else
-                    throw Error("Error fetching screenshot, Try again later.");
+                !code2img && this.#error(error.SCREENSHOT_FETCH);
+            } else if (code && !data.code) {
+                data.code = field.delete();
+                data.language = field.delete();
+                await this.#rm_code2img(question.id);
             }
 
-            await questionRef.update(body);
-            await bot.sendMessage(
-                `-100${admin_chat_id}`,
-                `${mention} made an edit to the question.`,
-                {
-                    parse_mode: "HTML",
-                    reply_to_message_id: admin_message_id,
-                }
-            );
+            await questionRef.update(data);
+            await this.telegram.edit_quiz(this.get_mention(), admin_message_id);
 
-            return {
-                statusCode: 200,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({ OK: true, docId: question.id, ...body }),
-                isBase64Encoded: false,
-            };
+            return this.resp_200({ OK: true, docId: question.id, ...data });
         } catch (error) {
-            return {
-                statusCode: 500,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    error: error.message,
-                    OK: false,
-                }),
-                isBase64Encoded: false,
-            };
+            return this.resp_500({ error: error.message });
         }
-    } else if (path === "review") {
-        const { value: body, error } = validate.validateMCQreview(
-            Object.fromEntries(new URLSearchParams(event.body))
+    }
+
+    async #review() {
+        const { value: data, error: err } = validate.validateMCQreview(
+            this.body
         );
 
-        if (error) {
-            return {
-                statusCode: 400,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({ error, OK: false }),
-                isBase64Encoded: false,
-            };
-        }
-
-        if (!contributor.admin) {
-            return {
-                statusCode: 403,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    error: "You are not authorized to perform this action",
-                    OK: false,
-                }),
-                isBase64Encoded: false,
-            };
-        }
-
         try {
-            const { id, action } = body;
+            (!this.user.admin || err) && this.#error(error.LESS_DATA);
+
+            const { id, action } = data;
             const collection = database.collection("questions");
             const questionRef = collection.doc(id);
             const questionDoc = await questionRef.get();
 
-            if (!questionDoc.exists) throw Error("Question does not exist");
+            !questionDoc.exists && this.#error(error.QUESTION_NOT_FOUND);
             const { approved, admin_message_id } = questionDoc.data();
-            if (approved && !contributor.admin) throw Error("Question is already approved.");
+            approved && !this.user.admin && this.#error(error.ALREADY_APPROVED);
 
             if (action === "approve") {
-                await bot.sendMessage(
-                    `-100${admin_chat_id}`,
-                    `${mention} reviewed this question and marked <i>approved</i>. Hence the question is ready to be posted.`,
-                    {
-                        parse_mode: "HTML",
-                        reply_to_message_id: admin_message_id,
-                    }
+                await this.telegram.review_quiz_approve(
+                    this.get_mention(),
+                    admin_message_id
                 );
 
                 await questionRef.update({
                     approved: true,
                 });
 
-                return {
-                    statusCode: 200,
-                    headers: {
-                        "content-type": `application/json`,
-                    },
-                    body: JSON.stringify({
-                        OK: true,
-                        message:
-                            "Question approved successfully. Ready to be posted.",
-                    }),
-                    isBase64Encoded: false,
-                };
+                return this.resp_200({ message: response.APPROVE_SUCCESS });
             } else if (action === "decline") {
-                const { admin_message_id } = questionDoc.data();
-
-                await bot.sendMessage(
-                    `-100${admin_chat_id}`,
-                    `${mention} reviewed this question and marked <i>declined/deleted</i>. Hence the question is deleted from database.`,
-                    {
-                        parse_mode: "HTML",
-                        reply_to_message_id: admin_message_id,
-                    }
+                await questionRef.delete();
+                await this.telegram.review_quiz_decline(
+                    this.get_mention(),
+                    admin_message_id
                 );
 
-                await questionRef.delete();
-
-                return {
-                    statusCode: 200,
-                    headers: {
-                        "content-type": `application/json`,
-                    },
-                    body: JSON.stringify({
-                        OK: true,
-                        message: "Question successfully deleted from database.",
-                    }),
-                    isBase64Encoded: false,
-                };
+                return this.resp_200({ message: response.DECLINE_SUCCESS });
             }
         } catch (error) {
-            return {
-                statusCode: 400,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    error: error.message,
-                    OK: false,
-                }),
-                isBase64Encoded: false,
-            };
+            return this.resp_500({ error: error.message });
         }
-    } else if (path === "publish") {
-        const { value: query, error } = validate.validateMCQpost(
-            Object.fromEntries(new URLSearchParams(event.rawQuery))
-        );
+    }
 
-        if (error) {
-            return {
-                statusCode: 400,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({ error, OK: false }),
-                isBase64Encoded: false,
-            };
-        }
-
-        if (!authentication && !api_authentication) {
-            return {
-                statusCode: 403,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    error: "You are not authorized to perform this action",
-                    OK: false,
-                }),
-                isBase64Encoded: false,
-            };
-        }
+    async #publish() {
+        const {
+            error: err,
+            value: { id },
+        } = validate.validateMCQpublish(this.query);
 
         try {
-            const { id } = query;
-            let reply_to_message_id;
+            let _poll_id;
+            err && this.#error(err);
+            const mention = this.get_mention();
             const collection = database.collection("questions");
             const questionRef = collection.doc(id);
             const questionDoc = await questionRef.get();
-
-            if (!questionDoc.exists) {
-                throw new Error("Question does not exist");
-            }
+            const questionUrl = `${this.url}/question/${questionRef.id}`;
+            !questionDoc.exists && this.#error(error.QUESTION_NOT_FOUND);
 
             const {
                 code,
@@ -414,31 +270,19 @@ exports.handler = async (event, context) => {
                 approved,
                 question,
                 schedule,
-                screenshot,
                 explanation,
                 correct_option,
                 option_1_value,
                 option_2_value,
                 option_3_value,
                 option_4_value,
-                admin_message_id,
             } = questionDoc.data();
 
-            if (poll_id) {
-                throw new Error("Question is already published");
-            }
-
-            if (!approved) {
-                throw new Error(
-                    "Question is not approved yet. Please ask a admin to approve it first."
-                );
-            }
-
-            if (schedule > moment().utcOffset("+05:30").unix() && !contributor.admin) {
-                throw new Error(
-                    "The question has been scheduled for later time, Only admin can post the question before time."
-                );
-            }
+            !approved && this.#error(error.UNAPPROVED);
+            poll_id && this.#error(error.ALREADY_PUBLISHED);
+            schedule > moment().utcOffset("+05:30").unix() &&
+                !this.user.admin &&
+                this.#error(error.EARLY_POST);
 
             const options = [
                 option_1_value,
@@ -453,69 +297,41 @@ exports.handler = async (event, context) => {
             );
 
             if (code) {
-                if (!screenshot) throw Error("Screenshot not found");
-                const sendPhoto = await bot.sendPhoto(
-                    `-100${chat_id}`,
-                    screenshot
-                );
+                const file = storage.file(`${id}.png`);
+                const [exists] = await file.exists();
+                !exists && this.#error(error.SCREENSHOT_NOT_FOUND);
 
-                reply_to_message_id = sendPhoto.message_id;
-            }
+                const [screenshot] = await file.getSignedUrl({
+                    action: "read",
+                    expires: moment().add(1, "minute").toDate(),
+                });
 
-            const sendPoll = await bot.sendPoll(
-                `-100${chat_id}`,
-                question,
-                options,
-                {
-                    is_anonymous: false,
-                    reply_to_message_id,
+                !screenshot && this.error(error.SCREENSHOT_FETCH);
+                _poll_id = await this.telegram.send_quiz_with_code(
+                    questionUrl,
+                    question,
+                    options,
                     correct_option_id,
                     explanation,
-                    type: "quiz",
-                }
-            );
+                    screenshot,
+                    mention
+                );
 
-            await bot.sendMessage(
-                `-100${admin_chat_id}`,
-                `This question is published on telegram group.`,
-                {
-                    reply_to_message_id: admin_message_id,
-                    reply_markup: set({}, "inline_keyboard[0]", [
-                        {
-                            text: "Open",
-                            url: `https://t.me/c/${chat_id}/${sendPoll.message_id}`,
-                        },
-                    ]),
-                }
-            );
+                await file.delete();
+            } else
+                _poll_id = await this.telegram.send_quiz_without_code(
+                    questionUrl,
+                    question,
+                    options,
+                    correct_option_id,
+                    explanation,
+                    mention
+                );
 
-            await questionRef.update({
-                poll_id: sendPoll.poll.id,
-            });
-
-            return {
-                statusCode: 200,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    OK: true,
-                    message: `Question successfully published on https://t.me/c/${chat_id}/${sendPoll.message_id}`,
-                }),
-                isBase64Encoded: false,
-            };
+            await questionRef.update({ poll_id: _poll_id });
+            return this.resp_200({ message: response.PUBLISH_SUCCESS });
         } catch (error) {
-            return {
-                statusCode: 400,
-                headers: {
-                    "content-type": `application/json`,
-                },
-                body: JSON.stringify({
-                    error: error.message,
-                    OK: false,
-                }),
-                isBase64Encoded: false,
-            };
+            return this.resp_500({ error: error.message });
         }
     }
-};
+}

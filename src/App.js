@@ -18,18 +18,18 @@ import {
 function App() {
     const dispatch = useDispatch();
     useEffect(() => {
-        fetch("/data/timetable")
+        fetch("/request/data/timetable")
             .then((resp) => resp.json())
             .then((timetable) => dispatch(setTimetable(timetable.data)));
-        fetch("/data/contributors")
+        fetch("/request/data/contributors")
             .then((resp) => resp.json())
             .then((contributors) =>
                 dispatch(setContributors(contributors.data))
             );
-        fetch("/data/topics")
+        fetch("/request/data/topics")
             .then((resp) => resp.json())
             .then((topics) => dispatch(setTopics(topics.data)));
-        fetch("/data/configs")
+        fetch("/request/data/configs")
             .then((resp) => resp.json())
             .then((configs) => dispatch(setConfigs(configs.data)));
         return () => {};

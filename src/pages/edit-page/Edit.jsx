@@ -1,5 +1,5 @@
 import React from "react";
-import { isEmpty } from "lodash";
+import { isEmpty, isNil, omitBy } from "lodash";
 
 import {
     Alert,
@@ -98,7 +98,9 @@ class Edit extends React.Component {
         fetch(`/mcq-post/edit?id=${id}`, {
             method: "POST",
             headers,
-            body: new URLSearchParams(this.state.data).toString(),
+            body: new URLSearchParams(
+                omitBy(this.state.data, isNil)
+            ).toString(),
         })
             .then((resp) => resp.json())
             .then((data) => {
@@ -161,9 +163,19 @@ class Edit extends React.Component {
     }
 
     updateData(e) {
-        this.setState(() => ({
-            data: { ...this.state.data, [e.target.name]: e.target.value },
-        }));
+        if (e.target.name === "code" && !e.target.value) {
+            this.setState(() => ({
+                data: {
+                    ...this.state.data,
+                    language: undefined,
+                    code: undefined,
+                },
+            }));
+        } else {
+            this.setState(() => ({
+                data: { ...this.state.data, [e.target.name]: e.target.value },
+            }));
+        }
     }
 
     render() {
@@ -484,7 +496,6 @@ class Edit extends React.Component {
                                 </>
                             )}
                     </Container>
-                    
                 ) : (
                     <Container>
                         <Spinner animation="border" variant="dark" size="sm" />{" "}

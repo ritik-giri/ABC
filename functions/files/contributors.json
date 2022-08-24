@@ -44,17 +44,10 @@
         "code": "MP"
     },
     {
-        "name": "Shreejoy Dash",
-        "telegram": 610434395,
-        "email": "pshreejoy15@gmail.com",
-        "code": "SD",
-        "admin": true
-    },
-    {
         "name": "Sanjib Kumar Mohanty",
-        "telegram":1393962218,
+        "telegram": 1393962218,
         "email": "sanjibmohanty2024@gmail.com",
-        "code": "SK"
+        "code": "SM"
     },
     {
         "name": "Prakriti Priya",
@@ -63,15 +56,29 @@
         "code": "PP"
     },
     {
-        "name": "Swaty Mohanty",
-        "telegram": 820706716,
-        "email": "swatymohanty1681@gmail.com",
-        "code": "SM"
-    },
-    {
         "name": "Prince Kumar Singh",
         "telegram": 5416962270,
         "email": "princekumar2000.pks@gmail.com",
-        "code": "PK"
+        "code": "PS"
+    },
+    {
+        "name": "Swaty Mohanty",
+        "telegram": 820706716,
+        "email": "swatymohanty1681@gmail.com",
+        "code": "MS"
+    },
+    {
+        "name": "Kshitiz Ranjan",
+        "telegram": 937704128,
+        "email": "kshitizranjan154@gmail.com",
+        "code": "KR",
+        "admin": true
+    },
+    {
+        "name": "Shreejoy Dash",
+        "telegram": 610434395,
+        "email": "pshreejoy15@gmail.com",
+        "code": "SD",
+        "admin": true
     }
 ]

@@ -1,9 +1,9 @@
-name: Alert
+name: Generate
 
 on:
     workflow_dispatch:
     schedule:
-        - cron: "0 * * * *"
+        - cron: "0 17 * * 6"
 
 jobs:
     build:
@@ -16,10 +16,10 @@ jobs:
               with:
                   node-version: "14"
                   cache: 'yarn'
-            - name: Alert
+            - name: Generate
               run: |
-                  yarn add moment node-fetch && yarn script:alert
+                  yarn add moment lodash node-fetch && yarn script:defaulter && yarn script:generate && yarn script:remind
+                  git add functions/files && git commit -m "auto-gen timetable: $(date)" && git push origin main
               env:
                   api_key: ${{ secrets.API_KEY }}
                   baseUrl: ${{ secrets.BASEURL }}
-

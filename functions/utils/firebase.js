@@ -12,10 +12,14 @@ if (firebase.apps.length === 0) {
 
 const auth = firebase.auth();
 const database = firebase.firestore();
-const storage = firebase.storage().bucket("gs://coding-wizards-club.appspot.com");
+const storage = firebase
+    .storage()
+    .bucket("gs://coding-wizards-club.appspot.com");
+const field = firebase.firestore.FieldValue;
 
 module.exports = {
     auth,
+    field,
     storage,
     database,
 };

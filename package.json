@@ -24,6 +24,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "script:alert": "node scripts/alert.js",
+    "script:defaulter": "node scripts/defaulter.js",
     "script:generate": "node scripts/generate.js",
     "script:remind": "node scripts/reminder.js"
   },

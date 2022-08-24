@@ -41,15 +41,11 @@ class AlertLoginInfo extends React.Component {
 
     updateLoginStatus() {
         const {
-            cookies: { tokenId },
+            cookies: { tokenId: token },
         } = this.props.cookies;
+        const headers = { token };
 
-        fetch("/login", {
-            method: "POST",
-            body: new URLSearchParams({
-                tokenId,
-            }).toString(),
-        })
+        fetch("/request/login", { method: "POST", headers })
             .then((resp) => resp.json())
             .then((data) => {
                 if (data.OK) {
